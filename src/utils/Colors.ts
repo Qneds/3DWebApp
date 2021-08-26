@@ -1,12 +1,12 @@
 
 const Colors = {
-    PrimaryGrey: '#888888',
-    SecondaryGrey: '#444444',
-    Turqoise: '#23DA7C',
-}
+  PrimaryGrey: '#888888',
+  SecondaryGrey: '#444444',
+  Turquoise: '#23DA7C',
+};
 
 export const PrimaryGrey = Colors.PrimaryGrey;
 export const SecondaryGrey = Colors.SecondaryGrey;
-export const Turqoise = Colors.Turqoise;
+export const Turquoise = Colors.Turquoise;
 
 export default Colors;

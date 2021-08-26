@@ -1,12 +1,11 @@
+import React from 'react';
 
-
-const ObjectTreeNodeWindow = () => {
-
-    return(
-        <div style={{backgroundColor: 'purple'}}>
+const ObjectTreeNodeWindow = (): JSX.Element => {
+  return (
+    <div style={{backgroundColor: 'purple'}}>
             object props
-        </div>
-    );
-}
+    </div>
+  );
+};
 
 export default ObjectTreeNodeWindow;
