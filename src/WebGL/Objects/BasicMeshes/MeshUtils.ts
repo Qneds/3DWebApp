@@ -117,6 +117,7 @@ export class Edge {
   private p1: Point;
   private p2: Point;
 
+  private vertexBuffer : WebGLBuffer | null = null;
   /**
    * Creates Edge from given points
    * @param {Point} p1
@@ -125,6 +126,14 @@ export class Edge {
   constructor(p1: Point, p2: Point) {
     this.p1 = p1;
     this.p2 = p2;
+
+    this.vertexBuffer = WebGLU.createBuffer();
+    if (this.vertexBuffer) {
+      const tmpP1 = this.p1.getPoint();
+      const tmpP2 = this.p2.getPoint();
+      WebGLU.uploadDataToBuffer(this.vertexBuffer,
+          [tmpP1[0], tmpP1[1], tmpP1[2], tmpP2[0], tmpP2[1], tmpP2[2]]);
+    }
   }
 
   /**
@@ -147,13 +156,18 @@ export class Edge {
 
   /**
    *
+   * @param {BasicShader} shader
    */
-  public drawPoint(): void {
-    const gl = WebGLU.returnWebGLContext();
-    if (gl) {
-      gl.drawElements(
-          gl.TRIANGLES, 1,
-          gl.UNSIGNED_INT, 0);
+  public drawEdge(shader: BasicShader): void {
+    if (this.vertexBuffer) {
+      shader.use();
+      WebGLU.bindArrayBuffer(this.vertexBuffer);
+      shader.enablePosition();
+      const gl = WebGLU.returnWebGLContext();
+      if (gl) {
+        gl.drawArrays(
+            gl.LINES, 0, 2);
+      }
     }
   }
 
@@ -237,13 +251,62 @@ export class Edge {
  */
 export class Face {
   private edges: [Edge, Edge, Edge];
-
+  private vertexBuffer: WebGLBuffer | null;
   /**
    * Creates Face from given edges
    * @param {[Edge, Edge, Edge]} edges
    */
   constructor(edges: [Edge, Edge, Edge]) {
     this.edges = edges;
+
+    this.vertexBuffer = WebGLU.createBuffer();
+    if (this.vertexBuffer) {
+      WebGLU.uploadDataToBuffer(this.vertexBuffer,
+          this.generateVertexesArray());
+    }
+  }
+
+  /**
+   * generates lines in form which can be drawn
+   * @return {number[]}
+   */
+  private generateVertexesArray(): number[] {
+    const pointsInEdges: Array<Point> = [];
+    this.edges.forEach((edge) => {
+      const [p1, p2] = edge.getPoints();
+      let findP1 = pointsInEdges.find((p) => p === p1);
+      let findP2 = pointsInEdges.find((p) => p === p2);
+      if (!findP1) {
+        findP1 = p1;
+      }
+      if (!findP2) {
+        findP2 = p2;
+      }
+      if (pointsInEdges.length === 0) {
+        pointsInEdges.push(findP1);
+        pointsInEdges.push(findP2);
+        return;
+      }
+      if (findP1 === pointsInEdges[0] &&
+          findP2 !== pointsInEdges[pointsInEdges.length - 1]) {
+        pointsInEdges.unshift(findP2);
+      } else if (findP1 === pointsInEdges[pointsInEdges.length - 1] &&
+          findP2 !== pointsInEdges[0]) {
+        pointsInEdges.push(findP2);
+      } else if (findP2 === pointsInEdges[0] &&
+          findP1 !== pointsInEdges[pointsInEdges.length - 1]) {
+        pointsInEdges.unshift(findP1);
+      } else if (findP2 === pointsInEdges[pointsInEdges.length - 1] &&
+          findP1 !== pointsInEdges[0]) {
+        pointsInEdges.push(findP1);
+      }
+    });
+    const vertices: number[][] = [];
+    pointsInEdges.forEach((p) => {
+      const vec = p.getPoint();
+      vertices.push([vec[0], vec[1], vec[2]]);
+    });
+    return vertices.flat();
   }
 
   /**
@@ -252,6 +315,23 @@ export class Face {
    */
   public getEdges(): Edge[] {
     return this.edges;
+  }
+
+  /**
+   * Draws this face
+   * @param {BasicShader} shader
+   */
+  public drawFace(shader: BasicShader): void {
+    if (this.vertexBuffer) {
+      shader.use();
+      WebGLU.bindArrayBuffer(this.vertexBuffer);
+      shader.enablePosition();
+      const gl = WebGLU.returnWebGLContext();
+      if (gl) {
+        gl.drawArrays(
+            gl.TRIANGLES, 0, 3);
+      }
+    }
   }
 
   /**

@@ -3,7 +3,7 @@ import {ConeBuilder} from 'WebGL/Objects/BasicMeshes/Cone';
 import {CubeBuilder} from 'WebGL/Objects/BasicMeshes/Cube';
 import {CylinderBuilder} from 'WebGL/Objects/BasicMeshes/Cylinder';
 import {TorusBuilder} from 'WebGL/Objects/BasicMeshes/Torus';
-import Material from 'WebGL/Objects/Material';
+import ObjectMaterial, {Material} from 'WebGL/Objects/Material';
 import Mesh from 'WebGL/Objects/Mesh';
 import Object3D from 'WebGL/Objects/Object3D';
 import {Transform} from 'WebGL/Objects/Transform';
@@ -36,13 +36,15 @@ export function buildMoveGizmoDir(cylinderHeight: number,
 
   const cylinderT = new Transform();
   cylinderObj.setMesh(new Mesh(cylinder));
-  cylinderObj.setMaterial(new Material(new BasicShader(), color));
+  cylinderObj.setMaterial(
+      new ObjectMaterial(new Material(new BasicShader(), color)));
   cylinderT.setPositionInParent([0, cylinderHeight/2, 0]);
   cylinderObj.setTransform(cylinderT);
 
   const coneT = new Transform();
   coneObj.setMesh(new Mesh(cone));
-  coneObj.setMaterial(new Material(new BasicShader(), color));
+  coneObj.setMaterial(
+      new ObjectMaterial(new Material(new BasicShader(), color)));
   coneT.setPositionInParent([0, cylinderHeight + coneHeight/2, 0]);
   coneObj.setTransform(coneT);
 
@@ -76,7 +78,8 @@ export function buildRotateGizmoDir(outerRadius: number,
 
   const torusT = new Transform();
   torusObj.setMesh(new Mesh(torus));
-  torusObj.setMaterial(new Material(new BasicShader(), color));
+  torusObj.setMaterial(
+      new ObjectMaterial(new Material(new BasicShader(), color)));
   torusObj.setTransform(torusT);
 
   const obj = new Object3D();
@@ -113,13 +116,15 @@ export function buildScaleGizmoDir(cylinderHeight: number,
 
   const cylinderT = new Transform();
   cylinderObj.setMesh(new Mesh(cylinder));
-  cylinderObj.setMaterial(new Material(new BasicShader(), color));
+  cylinderObj.setMaterial(
+      new ObjectMaterial(new Material(new BasicShader(), color)));
   cylinderT.setPositionInParent([0, cylinderHeight/2, 0]);
   cylinderObj.setTransform(cylinderT);
 
   const cubeT = new Transform();
   cubeObj.setMesh(new Mesh(cube));
-  cubeObj.setMaterial(new Material(new BasicShader(), color));
+  cubeObj.setMaterial(
+      new ObjectMaterial(new Material(new BasicShader(), color)));
   cubeT.setPositionInParent([0, cylinderHeight + cubeScale*cubeHalfWidth, 0]);
   cubeT.setScaleInParent([cubeScale, cubeScale, cubeScale]);
   cubeObj.setTransform(cubeT);

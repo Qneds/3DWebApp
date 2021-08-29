@@ -1,6 +1,5 @@
 import {Renderable} from 'WebGL/Renderers/Renderer';
 import {vec3, mat4} from 'gl-matrix';
-import Material from './Material';
 import Mesh, {MeshRaycastHits} from './Mesh';
 import Camera from 'WebGL/Camera/Camera';
 import WebGLU from 'WebGL/WebGlUtils';
@@ -12,6 +11,7 @@ import TorusInst from './BasicMeshes/Torus';
 import CircleInst from './BasicMeshes/Circle';
 import {Transform} from 'WebGL/Objects/Transform';
 import RayCaster, {RayCasterMode} from 'WebGL/Raycast/RayCaster';
+import ObjectMaterial, {Material} from './Material';
 
 export type ObjectRaycastHit = {
   hittedObject: Object3D,
@@ -27,8 +27,10 @@ export default class Object3D implements Renderable {
 
   private transform: Transform;
 
-  private material: Material;
+  private material: ObjectMaterial;
   private mesh: Mesh | null;
+
+  private isSelected = false;
 
   /**
    * Create 3D object
@@ -42,7 +44,9 @@ export default class Object3D implements Renderable {
     this.children = [];
     this.transform = transform;
 
-    this.material = new Material();
+    this.material = new ObjectMaterial();
+    this.material.getEdgeMaterial().setColor([0.5, 0.5, 0.5, 1]);
+    this.material.getPointMaterial().setColor([0.5, 0.5, 0.5, 1]);
     // this.mesh = new Mesh();
     // this.mesh = new Mesh(CubeInst);
     // this.mesh = new Mesh(CylinderInst);
@@ -50,6 +54,20 @@ export default class Object3D implements Renderable {
     // this.mesh = new Mesh(TorusInst);
     // this.mesh = new Mesh(CircleInst);
     this.mesh = mesh;
+  }
+
+  /**
+   * CHanges state to selected
+   */
+  public select(): void {
+    this.isSelected = true;
+  }
+
+  /**
+   * Changes state to unselected
+   */
+  public unselect(): void {
+    this.isSelected = false;
   }
 
   /**
@@ -137,7 +155,7 @@ export default class Object3D implements Renderable {
    * Sets new material for object
    * @param {Material} material
    */
-  public setMaterial(material: Material): void {
+  public setMaterial(material: ObjectMaterial): void {
     this.material = material;
   }
 
@@ -160,27 +178,52 @@ export default class Object3D implements Renderable {
         transformationMatrixFromParent,
         this.transform.getTransformationMatrix());
     if (this.mesh) {
-      const shader = this.material.getShader();
-      shader.use();
-      shader.enableViewProjectionMatrices(
-          camera.getLookAtMatrix(),
-          camera.getProjectionMatrix());
-      this.material.enableMaterial();
-      shader.enableTransformationMatrix(transform);
-      this.mesh.useFaces(shader);
-      /* const gl = WebGLU.returnWebGLContext();
-      if (gl) {
+      const shaderF = this.material.getFaceMaterial().getShader();
+      this.setUpShader(shaderF, camera, transform);
+      this.material.getFaceMaterial().enableMaterial();
+      /* if (gl) {
         gl.drawElements(
             gl.TRIANGLES, this.mesh.getIndicesLength(),
             gl.UNSIGNED_INT, 0);
       }*/
+      /*
       this.mesh.getPoints().forEach((p) => {
         p.drawPoint(shader);
-      });
+      });*/
+      /*
+      this.mesh.getEdges().forEach((e) => {
+        e.drawEdge(shader);
+      });*/
+      /*
+      this.mesh.getFaces().forEach((f) => {
+        f.drawFace(shader);
+      });*/
+      // this.mesh.drawPoints(shader);
+      // this.mesh.drawEdges(shader);
+      this.mesh.drawFaces(shaderF);
+
+      const shaderE = this.material.getEdgeMaterial().getShader();
+      this.setUpShader(shaderE, camera, transform);
+      this.material.getFaceMaterial().enableMaterial();
+      this.mesh.drawEdges(shaderE);
     }
 
     this.children.forEach((c) => {
       c.renderObj(camera, transform);
     });
+  }
+
+  /**
+   * enables shader and load matrices
+   * @param {BasicShader} shader
+   * @param {Camera} camera
+   * @param {mat4} t
+   */
+  private setUpShader(shader: BasicShader, camera: Camera, t: mat4): void {
+    shader.use();
+    shader.enableViewProjectionMatrices(
+        camera.getLookAtMatrix(),
+        camera.getProjectionMatrix());
+    shader.enableTransformationMatrix(t);
   }
 }

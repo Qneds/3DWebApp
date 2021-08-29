@@ -63,7 +63,7 @@ export class Circle implements GeometryProvider {
     let index = 0;
     const outerPsI: number[] = [];
     const innerPsI: number[] = [];
-    for ( let j = 0; j <= this.radialSegments; j ++ ) {
+    for ( let j = 0; j < this.radialSegments; j ++ ) {
       const v = j / this.radialSegments * this.thetaLength + this.thetaStart;
 
       const outerP = new Point([

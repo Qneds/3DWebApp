@@ -51,7 +51,7 @@ export class WebGL {
     const obj = new Object3D();
     obj.setMesh(new Mesh(new CircleBuilder().setRadialSegments(4).build()));
     const cObj = new Object3D();
-    cObj.setMesh(new Mesh(new CircleBuilder().build()));
+    cObj.setMesh(new Mesh(new ConeBuilder().build()));
     // obj.addChild(cObj);
     this.renderer = new StandardRenderer(this.mainCamera,
         obj/* new Gizmo().getGizmo()*/);
