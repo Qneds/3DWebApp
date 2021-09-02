@@ -23,7 +23,7 @@ export const basicVertexShader = `
 
   void main(void) {
     gl_Position = getWorldPosition();
-    gl_PointSize = 10.0;
+    gl_PointSize = 5.0;
   }
 
 `;

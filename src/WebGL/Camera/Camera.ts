@@ -39,6 +39,18 @@ export default class Camera implements CanvasListener {
     this.lookAtMatrix = this.calcLookAt();
     this.fov = fov;
     this.projectionMatrix = mat4.create();
+    const c = WebGLU.returnCanvas();
+    if (c) {
+      this.screenHeight = c.height;
+      this.screenWidth = c.width;
+
+      const ratio = c.width / c.height;
+      if (!this.projectionMatrix) {
+        this.projectionMatrix = mat4.create();
+      }
+      mat4.perspective(this.projectionMatrix,
+          toRadians(this.fov/ratio), ratio, 0.1, 100);
+    }
   }
 
   /**

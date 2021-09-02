@@ -58,12 +58,12 @@ export default class RayCaster {
    * @return {(ObjectRaycastHit | null)[]}
    */
   private castObject3D(o: Object3D): (ObjectRaycastHit | null)[] {
-    const outArray: (ObjectRaycastHit | null)[] = [];
+    let outArray: (ObjectRaycastHit | null)[] = [];
     outArray.push(o.raycast(this));
 
     if (this.recursion) {
       o.getChildrenList().forEach((child) => {
-        outArray.concat(this.castObject3D(child));
+        outArray = outArray.concat(this.castObject3D(child));
       });
     }
     return outArray;
@@ -75,6 +75,14 @@ export default class RayCaster {
    */
   public getMode(): RayCasterMode {
     return this.mode;
+  }
+
+  /**
+   * Set mode of raycaster
+   * @param {RayCasterMode} mode
+   */
+  public setMode(mode: RayCasterMode): void {
+    this.mode= mode;
   }
 
   /**

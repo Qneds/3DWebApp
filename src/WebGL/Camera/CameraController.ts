@@ -41,6 +41,14 @@ export default class CameraController implements MouseListener,
   }
 
   /**
+   * Check if camera is controlled at the moment
+   * @return {boolean}
+   */
+  public isCameraActive(): boolean {
+    return this.isActive;
+  }
+
+  /**
    *
    * @param {KeyboardEvent} event
    */
@@ -120,12 +128,6 @@ export default class CameraController implements MouseListener,
    * @param {MouseEvent} event
    */
   onMouseClick(event: MouseEvent): void {
-    const screenCords = vec2.fromValues(
-        ( event.offsetX / this.camera.getScreenDimensions()[0]) * 2 - 1,
-        - ( event.offsetY / this.camera.getScreenDimensions()[1]) * 2 + 1,
-    );
-    const ray = createRayFromCamera(screenCords, this.camera);
-    this.raycaster.setRay(ray);
-    this.raycaster.cast();
+    return;
   }
 }

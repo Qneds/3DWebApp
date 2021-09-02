@@ -76,7 +76,7 @@ export default class StandardRenderer {
    *
    */
   public renderFrame(): void {
-    WebGLU.clear(0, 0, 0, 0.5);
+    WebGLU.clear(0, 0, 0, 0.3);
     WebGLU.viewport();
     WebGLU.enableDepthTest(true);
     const tmp = mat4.create();

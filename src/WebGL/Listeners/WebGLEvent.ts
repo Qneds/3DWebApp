@@ -29,4 +29,12 @@ export default class WebGLEvent<T> {
   protected getListeners(): T[] {
     return this.listeners;
   }
+
+  /**
+   * Checks if all listeners still exists
+   */
+  protected refresh() {
+    this.listeners =
+      this.listeners.filter((l) => !(l === null || l === undefined));
+  }
 }

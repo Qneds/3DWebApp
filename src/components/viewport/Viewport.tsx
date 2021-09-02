@@ -5,12 +5,13 @@ import ColorModeContext from 'contexts/ColorModeContext';
 import {useResizeDetector} from 'react-resize-detector';
 import WebGLI from 'WebGL/WebGl';
 import WebGLCanvasEvent, {CanvasEvent} from 'WebGL/Listeners/CanvasEvent';
+import WebGLU from 'WebGL/WebGlUtils';
+import ViewManagerInst from 'WebGL/Views/ViewManager';
 
-const Viewport = (): JSX.Element => {
+const Viewport = ({viewId} : {viewId: number}): JSX.Element => {
   const color = useContext(ColorModeContext);
 
   const {width, height, ref} = useResizeDetector();
-  const [r, rer] = useState(false);
   const [canvasEvent, setCanvasEvent] = useState<CanvasEvent | null>(null);
 
 
@@ -23,11 +24,20 @@ const Viewport = (): JSX.Element => {
       return;
     }
     setCanvasEvent(canEvent);
-    WebGLI.init(gl, canEvent);
+    WebGLI.init(gl, canvas, canEvent);
     WebGLI.intiRenderLoop();
-    rer(!r);
   }, []);
-
+  /*
+  useEffect(() => {
+    const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
+    const gl = canvas.getContext('webgl');
+    if (!gl) {
+      alert('WebGL not initialized properly.');
+      return;
+    }
+    WebGLI.updateContext(gl);
+  });
+*/
   useEffect(() => {
     const canvas = document.querySelector('#canvas') as HTMLCanvasElement;
     if (!canvasEvent) {
@@ -71,8 +81,16 @@ const Viewport = (): JSX.Element => {
           position: 'relative',
         }}
       >
+        <div style={{
+          zIndex: 2,
+          position: 'absolute',
+          top: 0,
+        }}>
+          {ViewManagerInst.returnOnScreenMenu(viewId)}
+        </div>
         <canvas
           style={{
+            zIndex: 1,
             position: 'absolute',
             top: '0',
             left: '0',
@@ -88,5 +106,7 @@ const Viewport = (): JSX.Element => {
     </Frame>
   );
 };
+
+Viewport.displayName = 'Viewport';
 
 export default Viewport;

@@ -39,6 +39,10 @@ const Main = (): JSX.Element=> {
   const [{subWindowWidth, subWindowHeight}, setDimSubWindow] =
     useState({subWindowWidth: 0, subWindowHeight: 0});
 
+
+  const [viewId, setViewId] = useState(0);
+
+
   const onResizeLeftHor = (event, {element, size, handle}) => {
     if (size.width + widthRightHor + viewportMinSize < subWindowWidth &&
         size.width > menuMinHorSize) {
@@ -211,14 +215,14 @@ const Main = (): JSX.Element=> {
             style={{
               width: '100%',
             }}>
-            <ModeNavBar/>
+            <ModeNavBar updateViewId={setViewId}/>
           </div>
           <div
             style={{
               flexGrow: 1,
               backgroundColor: '#324552',
             }}>
-            <Viewport/>
+            <Viewport viewId={viewId} />
           </div>
         </div>
         <div>

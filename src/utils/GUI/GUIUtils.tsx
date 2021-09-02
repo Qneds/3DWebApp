@@ -49,6 +49,7 @@ export const GUIDropdown = (props: GUIDropdownProps) => {
     <ButtonDropdown
       isOpen={dropdownOpen}
       toggle={toggle}
+      onClick={props.onClick}
       className="btn-gui">
       <DropdownToggle caret>
         <span

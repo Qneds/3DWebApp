@@ -17,12 +17,14 @@ export class KeyboardEvent extends WebGLEvent<KeyboardListener> {
       this.getListeners().forEach((el) => {
         el.onKeyDown(e);
       });
+      this.refresh();
     };
 
     document.onkeyup = (e) => {
       this.getListeners().forEach((el) => {
         el.onKeyUp(e);
       });
+      this.refresh();
     };
   }
 }

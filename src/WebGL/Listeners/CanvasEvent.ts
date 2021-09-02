@@ -21,6 +21,7 @@ export class CanvasEvent extends WebGLEvent<CanvasListener> {
     this.getListeners().forEach((el) => {
       el.onResize(x, y, width, height, id);
     });
+    this.refresh();
   }
 }
 

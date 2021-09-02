@@ -1,13 +1,15 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {useContext} from 'react';
 import {DropdownItem} from 'reactstrap';
 import Frame from 'utils/Frame';
 import ColorModeContext from 'contexts/ColorModeContext';
 import {GUIDropdown} from 'utils/GUI/GUIUtils';
 import {MdArrowUpward, MdArrowDownward, MdDehaze} from 'react-icons/md';
+import ViewManagerInst from 'WebGL/Views/ViewManager';
 
 const MainNavBar = (): JSX.Element => {
   const color = useContext(ColorModeContext);
+  const [t, sT] = useState(false);
 
   return (
     <Frame
@@ -18,7 +20,8 @@ const MainNavBar = (): JSX.Element => {
         text={'Menu'}
         ico={<MdDehaze/>}
         onClick={() => {
-          '';
+          console.log('y');
+          sT(!t);
         }}>
         <DropdownItem>Menu</DropdownItem>
       </GUIDropdown>

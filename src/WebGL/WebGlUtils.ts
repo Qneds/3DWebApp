@@ -4,13 +4,23 @@ import {vec3, mat4, vec4} from 'gl-matrix';
  */
 export class WebGLUtils {
   private gl: WebGLRenderingContext | null = null;
+  private canvas: HTMLCanvasElement | null = null;
 
   /**
  * init
  * @param {WebGLRenderingContext} gl
+ * @param {HTMLCanvasElement} canvas
  */
-  initUtils(gl: WebGLRenderingContext ): void {
+  initUtils(gl: WebGLRenderingContext, canvas: HTMLCanvasElement): void {
     this.gl = gl;
+    this.canvas = canvas;
+  }
+
+  /**
+  * @return {WebGLRenderingContext | null}
+  */
+  public returnCanvas(): HTMLCanvasElement | null {
+    return this.canvas;
   }
 
   /**

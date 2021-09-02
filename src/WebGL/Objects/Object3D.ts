@@ -11,7 +11,7 @@ import TorusInst from './BasicMeshes/Torus';
 import CircleInst from './BasicMeshes/Circle';
 import {Transform} from 'WebGL/Objects/Transform';
 import RayCaster, {RayCasterMode} from 'WebGL/Raycast/RayCaster';
-import ObjectMaterial, {Material} from './Material';
+import ObjectMaterial, {Material, SPECIAL_MATERIALS} from './Material';
 
 export type ObjectRaycastHit = {
   hittedObject: Object3D,
@@ -46,7 +46,7 @@ export default class Object3D implements Renderable {
 
     this.material = new ObjectMaterial();
     this.material.getEdgeMaterial().setColor([0.5, 0.5, 0.5, 1]);
-    this.material.getPointMaterial().setColor([0.5, 0.5, 0.5, 1]);
+    this.material.getPointMaterial().setColor([0, 0, 0, 1]);
     // this.mesh = new Mesh();
     // this.mesh = new Mesh(CubeInst);
     // this.mesh = new Mesh(CylinderInst);
@@ -101,7 +101,7 @@ export default class Object3D implements Renderable {
    */
   public addChild(object: Object3D): void {
     this.children.push(object);
-    this.setParent(object);
+    object.setParent(this);
   }
 
   /**
@@ -152,11 +152,27 @@ export default class Object3D implements Renderable {
   }
 
   /**
+   * Returns mesh for this object
+   * @return {Mesh | null}
+   */
+  public getMesh(): Mesh | null {
+    return this.mesh;
+  }
+
+  /**
    * Sets new material for object
-   * @param {Material} material
+   * @param {ObjectMaterial} material
    */
   public setMaterial(material: ObjectMaterial): void {
     this.material = material;
+  }
+
+  /**
+   * Returns material for this object
+   * @return {ObjectMaterial}
+   */
+  public getMaterial(): ObjectMaterial {
+    return this.material;
   }
 
   /**
@@ -165,6 +181,14 @@ export default class Object3D implements Renderable {
    */
   public setTransform(transform: Transform): void {
     this.transform = transform;
+  }
+
+  /**
+   * Returns transform for this object
+   * @return {Transform}
+   */
+  public getTransform(): Transform {
+    return this.transform;
   }
 
   /**
@@ -177,10 +201,13 @@ export default class Object3D implements Renderable {
     mat4.multiply(transform,
         transformationMatrixFromParent,
         this.transform.getTransformationMatrix());
-    if (this.mesh) {
-      const shaderF = this.material.getFaceMaterial().getShader();
+
+    let mat: ObjectMaterial | null = this.material;
+    if (this.isSelected) mat = SPECIAL_MATERIALS.getSelectedObjectMaterial();
+    if (this.mesh && mat) {
+      const shaderF = mat.getFaceMaterial().getShader();
       this.setUpShader(shaderF, camera, transform);
-      this.material.getFaceMaterial().enableMaterial();
+      mat.getFaceMaterial().enableMaterial();
       /* if (gl) {
         gl.drawElements(
             gl.TRIANGLES, this.mesh.getIndicesLength(),
@@ -202,9 +229,9 @@ export default class Object3D implements Renderable {
       // this.mesh.drawEdges(shader);
       this.mesh.drawFaces(shaderF);
 
-      const shaderE = this.material.getEdgeMaterial().getShader();
+      const shaderE = mat.getEdgeMaterial().getShader();
       this.setUpShader(shaderE, camera, transform);
-      this.material.getFaceMaterial().enableMaterial();
+      mat.getEdgeMaterial().enableMaterial();
       this.mesh.drawEdges(shaderE);
     }
 

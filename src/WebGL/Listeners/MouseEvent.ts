@@ -33,6 +33,7 @@ export class MouseEvent extends WebGLEvent<MouseListener> {
       this.getListeners().forEach((el) => {
         el.onWheel(e);
       });
+      this.refresh();
     };
 
     canvas.onmousemove = (e) => {
@@ -43,6 +44,7 @@ export class MouseEvent extends WebGLEvent<MouseListener> {
       this.getListeners().forEach((el) => {
         el.onMouseMove(e, dx, dy);
       });
+      this.refresh();
     };
 
     canvas.onmousedown = (e) => {
@@ -52,6 +54,7 @@ export class MouseEvent extends WebGLEvent<MouseListener> {
       this.getListeners().forEach((el) => {
         el.onMouseDown(e);
       });
+      this.refresh();
     };
 
     canvas.onmouseup = (e) => {
@@ -59,12 +62,14 @@ export class MouseEvent extends WebGLEvent<MouseListener> {
       this.getListeners().forEach((el) => {
         el.onMouseUp(e);
       });
+      this.refresh();
     };
 
     canvas.onclick = (e) => {
       this.getListeners().forEach((el) => {
         el.onMouseClick(e);
       });
+      this.refresh();
     };
   }
 }
