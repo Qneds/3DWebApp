@@ -1,14 +1,18 @@
 import {vec2} from 'gl-matrix';
+import {mode} from 'mathjs';
 import React, {useState} from 'react';
 import {Button, ButtonGroup} from 'reactstrap';
 import Camera from 'WebGL/Camera/Camera';
 import CameraController from 'WebGL/Camera/CameraController';
 import {CanvasEvent} from 'WebGL/Listeners/CanvasEvent';
 import WebGLMouseEvent, {MouseListener} from 'WebGL/Listeners/MouseEvent';
-import {Edge, Face, Point} from 'WebGL/Objects/BasicMeshes/MeshUtils';
+import {Edge, EdgeHit, Face, FaceHit, Point, PointHit}
+  from 'WebGL/Objects/BasicMeshes/MeshUtils';
 import Object3D from 'WebGL/Objects/Object3D';
 import RayCaster, {createRayFromCamera, Ray, RayCasterMode}
   from 'WebGL/Raycast/RayCaster';
+import {getClosestEdgeOfObj, getClosestFaceOfObj, getClosestPointOfObj}
+  from 'WebGL/Raycast/RayCastUtils';
 import EditRenderer from 'WebGL/Renderers/EditRenderer';
 import STATE from 'WebGL/State';
 import View from './View';
@@ -64,11 +68,11 @@ export default class EditView extends View {
     this.unselectAll();
     switch (mode) {
       case EditViewMode.point: {
-        this.raycaster.setMode(RayCasterMode.point);
+        this.raycaster.setMode(RayCasterMode.point | RayCasterMode.face);
         break;
       }
       case EditViewMode.edge: {
-        this.raycaster.setMode(RayCasterMode.edge);
+        this.raycaster.setMode(RayCasterMode.edge | RayCasterMode.face);
         break;
       }
       case EditViewMode.face: {
@@ -106,7 +110,25 @@ export default class EditView extends View {
     const h = this.raycaster.cast();
 
     if (h && h.length > 0) {
-      const o = h[0].hits.pointsHits;
+      const o = h[0];
+      const f = getClosestFaceOfObj(o.hits);
+      switch (this.mode) {
+        case EditViewMode.point: {
+          const p = getClosestPointOfObj(o.hits);
+          this.handlePointHits(p, f);
+          break;
+        }
+        case EditViewMode.edge: {
+          const e = getClosestEdgeOfObj(o.hits);
+          this.handleEdgeHits(e, f);
+          break;
+        }
+        case EditViewMode.face: {
+          console.log(f);
+          this.handleFaceHits(f);
+          break;
+        }
+      }
     } else {
       this.unselectAll();
     }
@@ -125,11 +147,48 @@ export default class EditView extends View {
   }
 
   /**
-   * g
-   * @param {PointHit[]} arr
+   * selects point
+   * @param {PointHit | null} pointH
+   * @param {FaceHit | null} faceH
    */
-  private handlePointHits(arr: Point[]): void {
-    return;
+  private handlePointHits(pointH: PointHit | null, faceH: FaceHit | null):
+      void {
+    if (pointH && (!faceH || (faceH && pointH.distance < faceH.distance))) {
+      this.selectedPoint = pointH.point;
+      this.renderer.selectPoint(pointH.point);
+    } else {
+      this.renderer.unselectPoint();
+      this.selectedPoint = null;
+    }
+  }
+
+  /**
+   * selects edge
+   * @param {EdgeHit | null} edgeH
+   * @param {FaceHit | null} faceH
+   */
+  private handleEdgeHits(edgeH: EdgeHit | null, faceH: FaceHit | null): void {
+    if (edgeH && (!faceH || (faceH && edgeH.distance < faceH.distance))) {
+      this.selectedEdge = edgeH.edge;
+      this.renderer.selectEdge(edgeH.edge);
+    } else {
+      this.renderer.unselectEdge();
+      this.selectedEdge = null;
+    }
+  }
+
+  /**
+   * selects face
+   * @param {FaceHit | null} faceH
+   */
+  private handleFaceHits(faceH: FaceHit | null): void {
+    if (faceH) {
+      this.selectedFace = faceH.face;
+      this.renderer.selectFace(faceH.face);
+    } else {
+      this.renderer.unselectFace();
+      this.selectedFace = null;
+    }
   }
 }
 
