@@ -1,3 +1,4 @@
+import GLOBAL_COMPONENTS_REFRESH_EVENT from 'utils/RefreshEvent';
 import Camera from './Camera/Camera';
 import Object3D from './Objects/Object3D';
 
@@ -31,6 +32,7 @@ class State {
    */
   public setSelectedObject(selectedObject: Object3D | null) {
     this.selectedObject = selectedObject;
+    GLOBAL_COMPONENTS_REFRESH_EVENT.refresh();
   }
 
   /**

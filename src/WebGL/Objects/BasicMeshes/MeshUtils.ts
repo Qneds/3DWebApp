@@ -34,17 +34,24 @@ export class Point {
   constructor(cords: vec3) {
     this.point = cords;
     this.vertexBuffer = WebGLU.createBuffer();
-    if (this.vertexBuffer) {
-      WebGLU.uploadDataToBuffer(this.vertexBuffer, this.point as number[]);
-    }
+    this.recalculateBufferData();
   }
 
   /**
    * Return cord values
    * @return {vec3}
    */
-  public getPoint(): vec3 {
+  public getCords(): vec3 {
     return this.point;
+  }
+
+  /**
+   * Sets cord values
+   * @param {vec3} c
+   * @return {void}
+   */
+  public setCords(c: vec3): void {
+    this.point = c;
   }
 
   /**
@@ -108,6 +115,24 @@ export class Point {
       }
     }
   }
+
+  /**
+   * Recalculates webgl buffer data to draw
+   */
+  public recalculateBufferData(): void {
+    if (this.vertexBuffer) {
+      WebGLU.uploadDataToBuffer(this.vertexBuffer, this.point as number[]);
+    }
+  }
+
+  /**
+   * Returns copy of this point
+   * @return {Point}
+   */
+  public copy(): Point {
+    const c = vec3.fromValues(this.point[0], this.point[1], this.point[2]);
+    return new Point(c);
+  }
 }
 
 /**
@@ -128,12 +153,7 @@ export class Edge {
     this.p2 = p2;
 
     this.vertexBuffer = WebGLU.createBuffer();
-    if (this.vertexBuffer) {
-      const tmpP1 = this.p1.getPoint();
-      const tmpP2 = this.p2.getPoint();
-      WebGLU.uploadDataToBuffer(this.vertexBuffer,
-          [tmpP1[0], tmpP1[1], tmpP1[2], tmpP2[0], tmpP2[1], tmpP2[2]]);
-    }
+    this.recalculateBufferData();
   }
 
   /**
@@ -184,12 +204,12 @@ export class Edge {
     const pointMat = mat4.create();
 
     mat4.identity(pointMat);
-    mat4.translate(pointMat, pointMat, this.p1.getPoint());
+    mat4.translate(pointMat, pointMat, this.p1.getCords());
     mat4.multiply(pointMat, transformMatrix, pointMat);
     mat4.getTranslation(worldP1, pointMat);
 
     mat4.identity(pointMat);
-    mat4.translate(pointMat, pointMat, this.p2.getPoint());
+    mat4.translate(pointMat, pointMat, this.p2.getCords());
     mat4.multiply(pointMat, transformMatrix, pointMat);
     mat4.getTranslation(worldP2, pointMat);
 
@@ -244,6 +264,28 @@ export class Edge {
     }
     return null;
   }
+
+  /**
+   * Recalculates webgl buffer data to draw
+   */
+  public recalculateBufferData(): void {
+    if (this.vertexBuffer) {
+      const tmpP1 = this.p1.getCords();
+      const tmpP2 = this.p2.getCords();
+      WebGLU.uploadDataToBuffer(this.vertexBuffer,
+          [tmpP1[0], tmpP1[1], tmpP1[2], tmpP2[0], tmpP2[1], tmpP2[2]]);
+    }
+  }
+
+  /**
+   * Returns copy of this edge
+   * @return {Edge}
+   */
+  public copy(): Edge {
+    const p1 = this.getPoints()[0].copy();
+    const p2 = this.getPoints()[1].copy();
+    return new Edge(p1, p2);
+  }
 }
 
 /**
@@ -260,10 +302,7 @@ export class Face {
     this.edges = edges;
 
     this.vertexBuffer = WebGLU.createBuffer();
-    if (this.vertexBuffer) {
-      WebGLU.uploadDataToBuffer(this.vertexBuffer,
-          this.generateVertexesArray());
-    }
+    this.recalculateBufferData();
   }
 
   /**
@@ -303,7 +342,7 @@ export class Face {
     });
     const vertices: number[][] = [];
     pointsInEdges.forEach((p) => {
-      const vec = p.getPoint();
+      const vec = p.getCords();
       vertices.push([vec[0], vec[1], vec[2]]);
     });
     return vertices.flat();
@@ -317,6 +356,19 @@ export class Face {
     return this.edges;
   }
 
+  /**
+   * Return points arrays
+   * @return {Point[]}
+   */
+  public getPoints(): Point[] {
+    const a = this.edges[0].getPoints()[0];
+    const b = this.edges[0].getPoints()[1];
+    const c = this.edges[1].getPoints()[0] !== this.edges[0].getPoints()[0] &&
+      this.edges[1].getPoints()[0] !== this.edges[0].getPoints()[1]?
+      this.edges[1].getPoints()[0] :
+      this.edges[1].getPoints()[1];
+    return [a, b, c];
+  }
   /**
    * Draws this face
    * @param {BasicShader} shader
@@ -335,6 +387,16 @@ export class Face {
   }
 
   /**
+   * Recalculates webgl buffer data to draw
+   */
+  public recalculateBufferData(): void {
+    if (this.vertexBuffer) {
+      WebGLU.uploadDataToBuffer(this.vertexBuffer,
+          this.generateVertexesArray());
+    }
+  }
+
+  /**
    * Raycasts faces
    * @param {RayCaster} raycaster
    * @param {mat4} transformMatrix
@@ -345,46 +407,52 @@ export class Face {
     const faceNormal = vec3.create();
     const tmp = vec3.create();
     const pointMat = mat4.create();
+    const invTrans = mat4.create();
+    mat4.invert(invTrans, transformMatrix);
 
-    const worldA = vec3.create();
-    const worldB = vec3.create();
-    const worldC = vec3.create();
+    const localRayOrigin = vec3.create();
+    const localRayDirection = vec3.create();
 
-    const a = this.edges[0].getPoints()[0].getPoint();
-    const b = this.edges[0].getPoints()[1].getPoint();
+    const a = this.edges[0].getPoints()[0].getCords();
+    const b = this.edges[0].getPoints()[1].getCords();
     const c = this.edges[1].getPoints()[0] !== this.edges[0].getPoints()[0] &&
       this.edges[1].getPoints()[0] !== this.edges[0].getPoints()[1]?
-      this.edges[1].getPoints()[0].getPoint() :
-      this.edges[1].getPoints()[1].getPoint();
+      this.edges[1].getPoints()[0].getCords() :
+      this.edges[1].getPoints()[1].getCords();
 
     mat4.identity(pointMat);
-    mat4.translate(pointMat, pointMat, a);
-    mat4.multiply(pointMat, transformMatrix, pointMat);
-    mat4.getTranslation(worldA, pointMat);
+    mat4.translate(pointMat, pointMat, raycaster.getRay().getOrigin());
+    mat4.multiply(pointMat, invTrans, pointMat);
+    mat4.getTranslation(localRayOrigin, pointMat);
 
     mat4.identity(pointMat);
-    mat4.translate(pointMat, pointMat, b);
-    mat4.multiply(pointMat, transformMatrix, pointMat);
-    mat4.getTranslation(worldB, pointMat);
+    mat4.translate(pointMat, pointMat, raycaster.getRay().getDirection());
+    pointMat[15] = 0;
+    mat4.multiply(pointMat, invTrans, pointMat);
+    mat4.getTranslation(localRayDirection, pointMat);
 
-    mat4.identity(pointMat);
-    mat4.translate(pointMat, pointMat, c);
-    mat4.multiply(pointMat, transformMatrix, pointMat);
-    mat4.getTranslation(worldC, pointMat);
+    // console.log(transformMatrix, raycaster.getRay(), worldA, worldB, worldC);
 
     const tmp1 = vec3.create();
-    vec3.cross(faceNormal, vec3.sub(tmp1, worldB, worldA),
-        vec3.sub(tmp, worldC, worldA));
+    vec3.cross(faceNormal, vec3.sub(tmp1, b, a),
+        vec3.sub(tmp, c, a));
     vec3.normalize(faceNormal, faceNormal);
 
-    const d = vec3.dot(worldA, faceNormal);
 
-    const denominator = vec3.dot(raycaster.getRay().getDirection(), faceNormal);
+    // if (vec3.dot(faceNormal, a) < 0) vec3.inverse(faceNormal, faceNormal);
+    const d = vec3.dot(a, faceNormal);
+
+    // double sided normals
+    if (vec3.dot(localRayDirection, faceNormal) > 0) {
+      vec3.negate(faceNormal, faceNormal);
+    }
+
+    const denominator = vec3.dot(localRayDirection, faceNormal);
     if (!denominator) {
       return null;
     }
 
-    const numerator = -(vec3.dot(raycaster.getRay().getOrigin(), faceNormal) +
+    const numerator = -(vec3.dot(localRayOrigin, faceNormal) +
         d);
     const distance = numerator/denominator;
     if (distance <= 0) {
@@ -392,25 +460,70 @@ export class Face {
     }
 
     const hitPoint = vec3.create();
-    vec3.copy(hitPoint, raycaster.getRay().getOrigin());
-    vec3.scale(tmp, raycaster.getRay().getDirection(), distance);
+    vec3.copy(hitPoint, localRayOrigin);
+    vec3.scale(tmp, localRayDirection, distance);
     vec3.add(hitPoint, hitPoint, tmp);
 
-    vec3.cross(tmp, vec3.sub(tmp, worldB, worldA),
-        vec3.sub(tmp1, hitPoint, worldA));
-    const dot1 = vec3.dot(tmp, faceNormal);
+    // vec3.cross(tmp, vec3.sub(tmp, worldB, worldA),
+    //     vec3.sub(tmp1, hitPoint, worldA));
+    const dot1 = this.testSide(hitPoint, a, b, c);
 
-    vec3.cross(tmp, vec3.sub(tmp, worldC, worldB),
-        vec3.sub(tmp1, hitPoint, worldB));
-    const dot2 = vec3.dot(tmp, faceNormal);
+    vec3.cross(tmp, vec3.sub(tmp, c, b),
+        vec3.sub(tmp1, hitPoint, b));
+    const dot2 = this.testSide(hitPoint, b, c, a);
 
-    vec3.cross(tmp, vec3.sub(tmp, worldA, worldC),
-        vec3.sub(tmp1, hitPoint, worldC));
-    const dot3 = vec3.dot(tmp, faceNormal);
-    if (dot1 > 0 && dot2 > 0 && dot3 > 0) {
-      // console.log(hitPoint);
+    vec3.cross(tmp, vec3.sub(tmp, a, c),
+        vec3.sub(tmp1, hitPoint, c));
+    // const dot3 = vec3.dot(tmp, faceNormal);
+    const dot3 = this.testSide(hitPoint, c, a, b);
+    if (dot1 && dot2 && dot3) {
+      console.log(raycaster.getRay(), distance);
+      console.log(dot1, dot2, dot3);
+      console.log(hitPoint, a, b, c);
       return {face: this, distance: distance};
     }
     return null;
+  }
+
+  /**
+   * Test on which side of line is vector
+   * @param {vec3} p1
+   * @param {vec3} p2
+   * @param {vec3} a
+   * @param {vec3} b
+   * @return {boolean}
+   */
+  private testSide(p1: vec3, p2: vec3, a: vec3, b: vec3): boolean {
+    const tmp1 = vec3.create();
+    const tmp2 = vec3.create();
+
+    const cp1 = vec3.create();
+    const cp2 = vec3.create();
+    vec3.cross(cp1, vec3.sub(tmp1, b, a), vec3.sub(tmp2, p1, a));
+    vec3.cross(cp2, vec3.sub(tmp1, b, a), vec3.sub(tmp2, p2, a));
+    if (vec3.dot(cp1, cp2) > 0 ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns copy of this face
+   * @return {Face}
+   */
+  public copy(): Face {
+    const points = this.getPoints().map((p) => {
+      return p.copy();
+    });
+    const cpyE = this.edges.map((e) => {
+      const pInE = e.getPoints();
+      const p1I = this.getPoints().indexOf(pInE[0]);
+      const p2I = this.getPoints().indexOf(pInE[1]);
+      const p1 = points[p1I];
+      const p2 = points[p2I];
+      return new Edge(p1, p2);
+    }) as [Edge, Edge, Edge];
+    return new Face(cpyE);
   }
 }

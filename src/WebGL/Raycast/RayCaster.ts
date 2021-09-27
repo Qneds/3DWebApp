@@ -3,14 +3,14 @@ import Object3D, {ObjectRaycastHit} from 'WebGL/Objects/Object3D';
 import Camera from '../Camera/Camera';
 
 export interface RayCastable {
-  raycast(raycaster: RayCaster): void;
+  raycast(raycaster: RayCaster, transform: mat4): void;
 }
 
 export enum RayCasterMode {
-  hitbox = 'hitbox',
-  face = 'face',
-  edge = 'edge',
-  point = 'point',
+  hitbox = 0,
+  face = 1 << 0,
+  edge = 1 << 1,
+  point = 1 << 2,
 }
 
 /**
@@ -44,7 +44,9 @@ export default class RayCaster {
    */
   public cast(): ObjectRaycastHit[] | null {
     if (this.obj instanceof Object3D) {
-      const hits = this.castObject3D(this.obj);
+      const t = mat4.create();
+      mat4.identity(t);
+      const hits = this.castObject3D(this.obj, t);
       return hits.filter((h): h is ObjectRaycastHit => h !== null);
     } else {
       console.log('not');
@@ -55,15 +57,20 @@ export default class RayCaster {
   /**
    * Cast in case of Object3D
    * @param {Object3D} o
+   * @param {mat4} transformMat
    * @return {(ObjectRaycastHit | null)[]}
    */
-  private castObject3D(o: Object3D): (ObjectRaycastHit | null)[] {
+  private castObject3D(o: Object3D, transformMat: mat4):
+      (ObjectRaycastHit | null)[] {
     let outArray: (ObjectRaycastHit | null)[] = [];
-    outArray.push(o.raycast(this));
+    outArray.push(o.raycast(this, transformMat));
 
     if (this.recursion) {
       o.getChildrenList().forEach((child) => {
-        outArray = outArray.concat(this.castObject3D(child));
+        const tmpMat = mat4.create();
+        mat4.mul(tmpMat, transformMat,
+            child.getTransform().getTransformationMatrix());
+        outArray = outArray.concat(this.castObject3D(child, tmpMat));
       });
     }
     return outArray;
@@ -99,6 +106,22 @@ export default class RayCaster {
    */
   public setRay(ray: Ray): void {
     this.ray = ray;
+  }
+
+  /**
+   * Get raycastable object
+   * @return {Ray}
+   */
+  public getRaycastable(): Object3D | RayCastable {
+    return this.obj;
+  }
+
+  /**
+   * Set raycastable object
+   * @param {Object3D | RayCastable} obj
+   */
+  public setRaycastable(obj: Object3D | RayCastable): void {
+    this.obj = obj;
   }
 }
 
@@ -147,8 +170,6 @@ export function createRayFromCamera(screenCords: vec2, camera: Camera): Ray {
 
   // const direction = vec3.fromValues(screenCords[0], screenCords[1], 0.5);
   const direction4 = vec4.fromValues(screenCords[0], screenCords[1], 1, 1);
-  const tmpMat = mat4.create();
-  mat4.multiply(tmpMat, camera.getUnProjectMatrix(), tmpMat);
   vec4.transformMat4(direction4, direction4, camera.getUnProjectMatrix());
   const direction = vec3.fromValues(
       direction4[0]/direction4[3],

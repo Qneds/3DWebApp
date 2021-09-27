@@ -15,6 +15,7 @@ export default class CameraController implements MouseListener,
   private raycaster: RayCaster;
 
   private isActive = false;
+  private blockedBy = 0;
 
   private zoomScale = 0.01;
   private pix2angle = 0.2;
@@ -49,10 +50,33 @@ export default class CameraController implements MouseListener,
   }
 
   /**
+   * Check by how many objects camera is blocked
+   * @return {boolean}
+   */
+  public isCameraBlocked(): boolean {
+    return this.blockedBy !== 0;
+  }
+
+  /**
+   * Block camera by caller
+   */
+  public block(): void {
+    this.blockedBy++;
+  }
+
+  /**
+   * Unblock camera by caller
+   */
+  public unblock(): void {
+    if (this.blockedBy > 0) this.blockedBy--;
+  }
+
+  /**
    *
    * @param {KeyboardEvent} event
    */
   onKeyDown(event: KeyboardEvent): void {
+    if (this.blockedBy) return;
     if (event.key === 'c') {
       this.isActive = true;
     }
@@ -63,6 +87,7 @@ export default class CameraController implements MouseListener,
    * @param {KeyboardEvent} event
    */
   onKeyUp(event: KeyboardEvent): void {
+    if (this.blockedBy) return;
     if (event.key === 'c') {
       this.isActive = false;
     }
@@ -72,6 +97,7 @@ export default class CameraController implements MouseListener,
    * @param {WheelEvent} event
    */
   onWheel(event: WheelEvent): void {
+    if (this.blockedBy) return;
     if (this.isActive) {
       this.camera.setRadius(
           this.camera.getRadius() + event.deltaY * this.zoomScale);
@@ -84,13 +110,14 @@ export default class CameraController implements MouseListener,
    * @param {number} dy
    */
   onMouseMove(event: MouseEvent, dx: number, dy: number): void {
+    if (this.blockedBy) return;
     if (this.isActive && this.isLeftActive) {
       this.camera.setAzimutAngle(
           this.camera.getAzimutAngle() -
-          this.pix2angle * this.angleSpeed * dx);
+          this.pix2angle * this.angleSpeed * -dx);
       this.camera.setElevationAngle(
           this.camera.getElevationAngle() -
-          this.pix2angle * this.angleSpeed * dy);
+          this.pix2angle * this.angleSpeed * -dy);
     }
   }
 
@@ -98,6 +125,7 @@ export default class CameraController implements MouseListener,
    * @param {MouseEvent} event
    */
   onMouseDown(event: MouseEvent): void {
+    if (this.blockedBy) return;
     if (event.button === 0) {
       this.isLeftActive = true;
     }
@@ -113,6 +141,7 @@ export default class CameraController implements MouseListener,
    * @param {MouseEvent} event
    */
   onMouseUp(event: MouseEvent): void {
+    if (this.blockedBy) return;
     if (event.button === 0) {
       this.isLeftActive = false;
     }
@@ -129,5 +158,12 @@ export default class CameraController implements MouseListener,
    */
   onMouseClick(event: MouseEvent): void {
     return;
+  }
+
+  /**
+   */
+  cleanUp(): void {
+    WebGLMouseEvent.unsubscribe(this);
+    WebGLKeyboardEvent.unsubscribe(this);
   }
 }

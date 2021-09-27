@@ -22,6 +22,7 @@ export type MeshRaycastHits = {
  * Mesh class
  */
 export default class Mesh {
+  private enabled: boolean;
   protected faces: Face[] = [];
   protected edges: Edge[] = [];
   protected points: Point[] = [];
@@ -43,20 +44,22 @@ export default class Mesh {
     // const outVert = TorusInst.generateWebglVertexes();
     // const outVert = ConeInst.generateWebglVertexes();
     // const outVert = CircleInst.generateWebglVertexes();
+    this.enabled = true;
     this.points = geometryProvider.getPoints();
     this.edges = geometryProvider.getEdges();
     this.faces = geometryProvider.getFaces();
+    this.verticesBuffer = WebGLU.createBuffer();
+    this.indicesBuffer = WebGLU.createBuffer();
     this.generateWebglVertexes();
-    this.generateVerticesBuffer();
-    this.generateIndicesBuffer();
+    this.loadVerticesBuffer();
+    this.loadIndicesBuffer();
   }
 
   /**
    * Generates new vertices buffer
    * @return {void}
    */
-  private generateVerticesBuffer(): void {
-    this.verticesBuffer = WebGLU.createBuffer();
+  private loadVerticesBuffer(): void {
     if (this.verticesBuffer) {
       WebGLU.uploadDataToBuffer(this.verticesBuffer, this.vertices);
     }
@@ -66,8 +69,7 @@ export default class Mesh {
    * Generates new indices buffer
    * @return {void}
    */
-  private generateIndicesBuffer(): void {
-    this.indicesBuffer = WebGLU.createBuffer();
+  private loadIndicesBuffer(): void {
     if (this.indicesBuffer) {
       WebGLU.uploadElementDataToBuffer(this.indicesBuffer, this.indicesFaces);
     }
@@ -169,7 +171,7 @@ export default class Mesh {
     });
 
     points.forEach((p) => {
-      const vec = p.getPoint();
+      const vec = p.getCords();
       vertices.push([vec[0], vec[1], vec[2]]);
     });
     const flatten = vertices.flat();
@@ -192,7 +194,7 @@ export default class Mesh {
 
     this.points.forEach((p) => {
       const po = vec3.create();
-      vec3.copy(po, p.getPoint());
+      vec3.copy(po, p.getCords());
       newPoints.push(new Point(po));
     });
 
@@ -242,25 +244,21 @@ export default class Mesh {
     const pointsHits: (PointHit | null)[] = [];
     const edgesHits: (EdgeHit | null)[] = [];
     const facesHits: (FaceHit | null)[] = [];
-
-    switch (raycaster.getMode()) {
-      case RayCasterMode.face: {
+    if (this.enabled) {
+      if (raycaster.getMode() & RayCasterMode.face) {
         this.faces.forEach((f) => {
           facesHits.push(f.raycastFace(raycaster, transformMatrix));
         });
-        break;
       }
-      case RayCasterMode.edge: {
+      if (raycaster.getMode() & RayCasterMode.edge) {
         this.edges.forEach((e) => {
           edgesHits.push(e.raycastEdge(raycaster, transformMatrix));
         });
-        break;
       }
-      case RayCasterMode.point: {
+      if (raycaster.getMode() & RayCasterMode.point) {
         this.points.forEach((p) => {
           pointsHits.push(p.raycastPoint(raycaster, transformMatrix));
         });
-        break;
       }
     }
 
@@ -276,6 +274,8 @@ export default class Mesh {
    * @param {BasicShader} shader
    */
   public drawPoints(shader: BasicShader): void {
+    if (!this.enabled) return;
+
     const gl = WebGLU.returnWebGLContext();
     if (gl && this.verticesBuffer) {
       shader.use();
@@ -290,6 +290,8 @@ export default class Mesh {
    * @param {BasicShader} shader
    */
   public drawEdges(shader: BasicShader): void {
+    if (!this.enabled) return;
+
     const gl = WebGLU.returnWebGLContext();
     if (gl && this.verticesBuffer && this.indicesBuffer) {
       shader.use();
@@ -307,6 +309,8 @@ export default class Mesh {
    * @param {BasicShader} shader
    */
   public drawFaces(shader: BasicShader): void {
+    if (!this.enabled) return;
+
     const gl = WebGLU.returnWebGLContext();
     if (gl && this.verticesBuffer && this.indicesBuffer) {
       shader.use();
@@ -317,6 +321,14 @@ export default class Mesh {
       gl.drawElements(gl.TRIANGLES, this.indicesFaces.length,
           gl.UNSIGNED_INT, 0);
     }
+  }
+
+  /**
+   * Refreshes buffers of mesh
+   */
+  public refreshBuffers(): void {
+    this.generateWebglVertexes();
+    this.loadVerticesBuffer();
   }
 
   /**
@@ -341,5 +353,35 @@ export default class Mesh {
    */
   public getFaces(): Face[] {
     return this.faces;
+  }
+
+  /**
+   * Enables mesh
+   */
+  public enable(): void {
+    this.enabled = true;
+  }
+
+  /**
+   * Disables mesh
+   */
+  public disable(): void {
+    this.enabled = true;
+  }
+
+  /**
+   * Enables or disables mesh based on parameter
+   * @param {boolean} newState
+   */
+  public enableDisable(newState: boolean): void {
+    this.enabled = newState;
+  }
+
+  /**
+   * Check if mesh is enabled
+   * @return {boolean}
+   */
+  public isEnabled(): boolean {
+    return this.enabled;
   }
 }

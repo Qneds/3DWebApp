@@ -113,6 +113,13 @@ export class Material {
   public setColor(color: vec4): void {
     this.color = color;
   }
+  /**
+   * Gets color
+   * @return {vec4}
+   */
+  public getColor(): vec4 {
+    return this.color;
+  }
 }
 
 /**

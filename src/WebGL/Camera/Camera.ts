@@ -70,7 +70,7 @@ export default class Camera implements CanvasListener {
       this.projectionMatrix = mat4.create();
     }
     mat4.perspective(this.projectionMatrix,
-        toRadians(this.fov/ratio), ratio, 0.1, 100);
+        toRadians(this.fov/ratio), ratio, 0.1, 100000);
   }
 
   /**

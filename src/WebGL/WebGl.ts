@@ -6,7 +6,6 @@ import CameraController from './Camera/CameraController';
 import WebGLMouseEvent from './Listeners/MouseEvent';
 import WebGLKeyboardEvent from './Listeners/KeyboardEvent';
 import {CanvasEvent} from './Listeners/CanvasEvent';
-import {Gizmo} from './Editor/Gizmos/Gizmo';
 import {ConeBuilder} from './Objects/BasicMeshes/Cone';
 import Mesh from './Objects/Mesh';
 import {CircleBuilder} from './Objects/BasicMeshes/Circle';
@@ -15,6 +14,7 @@ import {CubeBuilder} from './Objects/BasicMeshes/Cube';
 import ViewManagerInst, {ViewManager} from './Views/ViewManager';
 import STATE from './State';
 import {SPECIAL_MATERIALS} from './Objects/Material';
+import {Transform} from './Objects/Transform';
 /**
  * WebGl
  */
@@ -42,6 +42,7 @@ export class WebGL {
     this.canvas = null;
     this.viewManager = ViewManagerInst;
     this.world = new Object3D();
+    this.world.setName('root');
   }
 
   /**
@@ -61,9 +62,15 @@ export class WebGL {
     const obj = new Object3D();
     obj.setMesh(new Mesh(new CircleBuilder().setRadialSegments(4).build()));
     const cObj = new Object3D();
-    cObj.setMesh(new Mesh(new ConeBuilder().build()));
-    // obj.addChild(cObj);
+    cObj.setTransform(new Transform().setPositionInParent([2, 2, 2]));
+    cObj.setMesh(new Mesh(new CubeBuilder().build()));
+    obj.addChild(cObj);
     this.world.addChild(obj);
+    const checker = new Object3D();
+    checker.setMesh(new Mesh(new CubeBuilder().setXHalfWidth(0.5)
+        .setYHalfWidth(0.5).setZHalfWidth(0.5).build()));
+    checker.setTransform(new Transform().setPositionInParent([0, 0, 5]));
+    this.world.addChild(checker);
     // this.renderer = new StandardRenderer(this.mainCamera,
     //    this.world/* new Gizmo().getGizmo()*/);
     STATE.setWorld(this.world);

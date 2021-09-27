@@ -9,9 +9,9 @@ import {buildMoveGizmoDir, buildRotateGizmoDir,
   buildScaleGizmoDir} from './GizmoUtils';
 
 /**
- * Gizmo class
+ * Gizmo move class
  */
-export class Gizmo {
+export class GizmoMove {
   private gizmoX: Object3D;
   private gizmoY: Object3D;
   private gizmoZ: Object3D;
@@ -24,29 +24,86 @@ export class Gizmo {
   constructor() {
     this.main = new Object3D();
 
-    // this.gizmoX = new Object3D();
-    // this.gizmoY = new Object3D();
-    // this.gizmoZ = new Object3D();
-
-    // this.gizmoX = buildMoveGizmoDir(10, 1, 5, 2, 12, [1, 0, 0, 1]);
-    // this.gizmoY = buildMoveGizmoDir(10, 1, 5, 2, 12, [0, 1, 0, 1]);
-    // this.gizmoZ = buildMoveGizmoDir(10, 1, 5, 2, 12, [0, 0, 1, 1]);
-
-    // this.gizmoX = buildRotateGizmoDir(10, 0.5, 26, 5, [1, 0, 0, 1]);
-    // this.gizmoY = buildRotateGizmoDir(10, 0.5, 26, 5, [0, 1, 0, 1]);
-    // this.gizmoZ = buildRotateGizmoDir(10, 0.5, 26, 5, [0, 0, 1, 1]);
-
-    this.gizmoX = buildScaleGizmoDir(10, 1, 2, 12, [1, 0, 0, 1]);
-    this.gizmoY = buildScaleGizmoDir(10, 1, 2, 12, [0, 1, 0, 1]);
-    this.gizmoZ = buildScaleGizmoDir(10, 1, 2, 12, [0, 0, 1, 1]);
+    this.gizmoX = buildMoveGizmoDir(10, 1, 5, 2, 12, [1, 0, 0, 1]);
+    this.gizmoY = buildMoveGizmoDir(10, 1, 5, 2, 12, [0, 1, 0, 1]);
+    this.gizmoZ = buildMoveGizmoDir(10, 1, 5, 2, 12, [0, 0, 1, 1]);
 
     let t = new Transform();
-    t.setOrientationInParent([toRadians(90), 0, 0]);
+    t.setOrientationInParent([0, 0, toRadians(-90)]);
     this.gizmoX.setTransform(t);
     this.main.addChild(this.gizmoX);
 
     t = new Transform();
     t.setOrientationInParent([0, toRadians(90), 0]);
+    this.gizmoY.setTransform(t);
+    this.main.addChild(this.gizmoY);
+
+    t = new Transform();
+    t.setOrientationInParent([toRadians(90), 0, 0]);
+    this.gizmoZ.setTransform(t);
+    this.main.addChild(this.gizmoZ);
+  }
+
+  /**
+   * Returns gizmo 3D object
+   * @return {Object3D}
+   */
+  public getGizmo(): Object3D {
+    return this.main;
+  }
+
+  /**
+   * Returns gizmoX 3D object
+   * @return {Object3D}
+   */
+  public getGizmoX(): Object3D {
+    return this.gizmoX;
+  }
+
+  /**
+   * Returns gizmoY 3D object
+   * @return {Object3D}
+   */
+  public getGizmoY(): Object3D {
+    return this.gizmoY;
+  }
+
+  /**
+   * Returns gizmoZ 3D object
+   * @return {Object3D}
+   */
+  public getGizmoZ(): Object3D {
+    return this.gizmoZ;
+  }
+}
+
+/**
+ * Gizmo rotate class
+ */
+export class GizmoRotate {
+  private gizmoX: Object3D;
+  private gizmoY: Object3D;
+  private gizmoZ: Object3D;
+
+  private main: Object3D;
+
+  /**
+   *
+   */
+  constructor() {
+    this.main = new Object3D();
+
+    this.gizmoX = buildRotateGizmoDir(10, 0.5, 26, 5, [1, 0, 0, 1]);
+    this.gizmoY = buildRotateGizmoDir(10, 0.5, 26, 5, [0, 1, 0, 1]);
+    this.gizmoZ = buildRotateGizmoDir(10, 0.5, 26, 5, [0, 0, 1, 1]);
+
+    let t = new Transform();
+    t.setOrientationInParent([0, toRadians(-90), 0]);
+    this.gizmoX.setTransform(t);
+    this.main.addChild(this.gizmoX);
+
+    t = new Transform();
+    t.setOrientationInParent([toRadians(90), 0, 0]);
     this.gizmoY.setTransform(t);
     this.main.addChild(this.gizmoY);
 
@@ -63,7 +120,96 @@ export class Gizmo {
   public getGizmo(): Object3D {
     return this.main;
   }
-}
 
-const GizmoInst = new Gizmo();
-export default GizmoInst;
+  /**
+   * Returns gizmoX 3D object
+   * @return {Object3D}
+   */
+  public getGizmoX(): Object3D {
+    return this.gizmoX;
+  }
+
+  /**
+   * Returns gizmoY 3D object
+   * @return {Object3D}
+   */
+  public getGizmoY(): Object3D {
+    return this.gizmoY;
+  }
+
+  /**
+   * Returns gizmoZ 3D object
+   * @return {Object3D}
+   */
+  public getGizmoZ(): Object3D {
+    return this.gizmoZ;
+  }
+}
+/**
+ * Gizmo scale class
+ */
+export class GizmoScale {
+  private gizmoX: Object3D;
+  private gizmoY: Object3D;
+  private gizmoZ: Object3D;
+
+  private main: Object3D;
+
+  /**
+   *
+   */
+  constructor() {
+    this.main = new Object3D();
+
+    this.gizmoX = buildScaleGizmoDir(10, 1, 2, 12, [1, 0, 0, 1]);
+    this.gizmoY = buildScaleGizmoDir(10, 1, 2, 12, [0, 1, 0, 1]);
+    this.gizmoZ = buildScaleGizmoDir(10, 1, 2, 12, [0, 0, 1, 1]);
+
+    let t = new Transform();
+    t.setOrientationInParent([0, 0, toRadians(-90)]);
+    this.gizmoX.setTransform(t);
+    this.main.addChild(this.gizmoX);
+
+    t = new Transform();
+    t.setOrientationInParent([0, toRadians(90), 0]);
+    this.gizmoY.setTransform(t);
+    this.main.addChild(this.gizmoY);
+
+    t = new Transform();
+    t.setOrientationInParent([toRadians(90), 0, 0]);
+    this.gizmoZ.setTransform(t);
+    this.main.addChild(this.gizmoZ);
+  }
+
+  /**
+   * Returns gizmo 3D object
+   * @return {Object3D}
+   */
+  public getGizmo(): Object3D {
+    return this.main;
+  }
+
+  /**
+   * Returns gizmoX 3D object
+   * @return {Object3D}
+   */
+  public getGizmoX(): Object3D {
+    return this.gizmoX;
+  }
+
+  /**
+   * Returns gizmoY 3D object
+   * @return {Object3D}
+   */
+  public getGizmoY(): Object3D {
+    return this.gizmoY;
+  }
+
+  /**
+   * Returns gizmoZ 3D object
+   * @return {Object3D}
+   */
+  public getGizmoZ(): Object3D {
+    return this.gizmoZ;
+  }
+}

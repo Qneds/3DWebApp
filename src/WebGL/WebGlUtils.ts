@@ -43,7 +43,18 @@ export class WebGLUtils {
       return;
     }
     this.gl.clearColor(r, g, b, a);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+  }
+
+  /**
+   * Clears depth buffer
+   * @return {void}
+   */
+  clearDepthBuffer(): void {
+    if (!this.gl) {
+      return;
+    }
+    this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
   }
 
   /**

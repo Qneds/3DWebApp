@@ -12,6 +12,7 @@ import CircleInst from './BasicMeshes/Circle';
 import {Transform} from 'WebGL/Objects/Transform';
 import RayCaster, {RayCasterMode} from 'WebGL/Raycast/RayCaster';
 import ObjectMaterial, {Material, SPECIAL_MATERIALS} from './Material';
+import {makeId} from 'WebGL/utils.ts/stringUtils';
 
 export type ObjectRaycastHit = {
   hittedObject: Object3D,
@@ -31,6 +32,9 @@ export default class Object3D implements Renderable {
   private mesh: Mesh | null;
 
   private isSelected = false;
+
+  private id: string;
+  private name: string;
 
   /**
    * Create 3D object
@@ -54,6 +58,33 @@ export default class Object3D implements Renderable {
     // this.mesh = new Mesh(TorusInst);
     // this.mesh = new Mesh(CircleInst);
     this.mesh = mesh;
+
+    this.id = Date.now() + ' ' + makeId(10);
+    this.name = makeId(10);
+  }
+
+  /**
+   * Return name of object
+   * @return {string}
+   */
+  public getName(): string {
+    return this.name;
+  }
+
+  /**
+   * Sets new name of object
+   * @param {string} newName
+   */
+  public setName(newName: string): void {
+    this.name = newName;
+  }
+
+  /**
+   * Return id of object
+   * @return {string}
+   */
+  public getId(): string {
+    return this.id;
   }
 
   /**
@@ -73,9 +104,10 @@ export default class Object3D implements Renderable {
   /**
    *
    * @param {RayCaster} raycaster
+   * @param {mat4} transformMat
    * @return {ObjectRaycastHit | null}
    */
-  raycast(raycaster: RayCaster): ObjectRaycastHit | null {
+  raycast(raycaster: RayCaster, transformMat: mat4): ObjectRaycastHit | null {
     if (raycaster.getMode() === RayCasterMode.hitbox) {
       console.log('Implement hitbox on Obejct3D raycast');
       return null;
@@ -84,7 +116,7 @@ export default class Object3D implements Renderable {
         const h = {
           hittedObject: this,
           hits:
-            this.mesh.raycastMesh(raycaster, this.getWorldTransformMatrix()),
+            this.mesh.raycastMesh(raycaster, transformMat),
         };
         return h.hits.pointsHits.length <= 0 &&
             h.hits.edgesHits.length <= 0 &&
@@ -97,11 +129,25 @@ export default class Object3D implements Renderable {
 
   /**
    * Adds object as a child of this object
+   * Sets parent of added object to this object
    * @param {Object3D} object
    */
   public addChild(object: Object3D): void {
     this.children.push(object);
     object.setParent(this);
+  }
+
+  /**
+   * Removes object from this objects children list.
+   * If object was a child then parent of removed object is set to null;
+   * @param {Object3D} object
+   */
+  public removeChild(object: Object3D): void {
+    const index = this.children.indexOf(object);
+    if (index !== -1) {
+      this.children.splice(index, 1);
+      object.setParent(null);
+    }
   }
 
   /**
@@ -138,7 +184,8 @@ export default class Object3D implements Renderable {
       return localTransform;
     } else {
       const o = this.parent.getWorldTransformMatrix();
-      return mat4.multiply(o, o, localTransform);
+      const out = mat4.create();
+      return mat4.multiply(out, o, localTransform);
     }
   }
 
@@ -195,8 +242,10 @@ export default class Object3D implements Renderable {
    * Render this object
    * @param {Camera} camera
    * @param {mat4} transformationMatrixFromParent
+   * @param {boolean} drawEdges
    */
-  public renderObj(camera: Camera, transformationMatrixFromParent: mat4): void {
+  public renderObj(camera: Camera, transformationMatrixFromParent: mat4,
+      drawEdges = true): void {
     const transform = mat4.create();
     mat4.multiply(transform,
         transformationMatrixFromParent,
@@ -228,15 +277,16 @@ export default class Object3D implements Renderable {
       // this.mesh.drawPoints(shader);
       // this.mesh.drawEdges(shader);
       this.mesh.drawFaces(shaderF);
-
-      const shaderE = mat.getEdgeMaterial().getShader();
-      this.setUpShader(shaderE, camera, transform);
-      mat.getEdgeMaterial().enableMaterial();
-      this.mesh.drawEdges(shaderE);
+      if (drawEdges) {
+        const shaderE = mat.getEdgeMaterial().getShader();
+        this.setUpShader(shaderE, camera, transform);
+        mat.getEdgeMaterial().enableMaterial();
+        this.mesh.drawEdges(shaderE);
+      }
     }
 
     this.children.forEach((c) => {
-      c.renderObj(camera, transform);
+      c.renderObj(camera, transform, drawEdges);
     });
   }
 

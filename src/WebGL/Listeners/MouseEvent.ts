@@ -37,8 +37,8 @@ export class MouseEvent extends WebGLEvent<MouseListener> {
     };
 
     canvas.onmousemove = (e) => {
-      const dx = this.x - e.clientX;
-      const dy = this.y - e.clientY;
+      const dx = e.clientX - this.x;
+      const dy = e.clientY - this.y;
       this.x = e.clientX;
       this.y = e.clientY;
       this.getListeners().forEach((el) => {

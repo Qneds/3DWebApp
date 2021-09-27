@@ -85,26 +85,11 @@ export default class EditRenderer {
    */
   private renderObject(): void {
     const transform = mat4.create();
-    mat4.copy(transform,
-        this.objToRender.getTransform().getTransformationMatrix());
+    /* mat4.copy(transform,
+        this.objToRender.getTransform().getTransformationMatrix());*/
+    mat4.identity(transform);
     const mesh = this.objToRender.getMesh();
     if (mesh) {
-      const material = this.objToRender.getMaterial();
-      const shaderF = material.getFaceMaterial().getShader();
-      setUpShader(shaderF, this.camera, transform);
-      material.getFaceMaterial().enableMaterial();
-      mesh.drawFaces(shaderF);
-
-      const shaderE = material.getEdgeMaterial().getShader();
-      setUpShader(shaderE, this.camera, transform);
-      material.getEdgeMaterial().enableMaterial();
-      mesh.drawEdges(shaderE);
-
-      const shaderP = material.getPointMaterial().getShader();
-      setUpShader(shaderP, this.camera, transform);
-      material.getPointMaterial().enableMaterial();
-      mesh.drawPoints(shaderP);
-
       if (this.selectedPoint) {
         const materialP = SPECIAL_MATERIALS.getSelectedPointMaterial();
         if (materialP) {
@@ -134,6 +119,23 @@ export default class EditRenderer {
           this.selectedFace.drawFace(shaderF);
         }
       }
+
+
+      const material = this.objToRender.getMaterial();
+      const shaderF = material.getFaceMaterial().getShader();
+      setUpShader(shaderF, this.camera, transform);
+      material.getFaceMaterial().enableMaterial();
+      mesh.drawFaces(shaderF);
+
+      const shaderE = material.getEdgeMaterial().getShader();
+      setUpShader(shaderE, this.camera, transform);
+      material.getEdgeMaterial().enableMaterial();
+      mesh.drawEdges(shaderE);
+
+      const shaderP = material.getPointMaterial().getShader();
+      setUpShader(shaderP, this.camera, transform);
+      material.getPointMaterial().enableMaterial();
+      mesh.drawPoints(shaderP);
     }
   }
 }

@@ -62,28 +62,34 @@ export class Transform {
   /**
    * set position in parent space
    * @param {vec3} position
+   * @return {Transform}
    */
-  public setPositionInParent(position: vec3): void {
+  public setPositionInParent(position: vec3): Transform {
     this.positionInParent = position;
     this.updateTransformMatrix();
+    return this;
   }
 
   /**
    * set orientation in parent space
    * @param {vec3} orientation
+   * @return {Transform}
    */
-  public setOrientationInParent(orientation: vec3): void {
+  public setOrientationInParent(orientation: vec3): Transform {
     this.orientationInParent = orientation;
     this.updateTransformMatrix();
+    return this;
   }
 
   /**
    * set scale in parent space
-   * @param {vec3} scale( ͡o ͜ʖ ͡o)
+   * @param {vec3} scale
+   * @return {Transform}
    */
-  public setScaleInParent(scale: vec3): void {
+  public setScaleInParent(scale: vec3): Transform {
     this.scaleInParent = scale;
     this.updateTransformMatrix();
+    return this;
   }
 
   /**

@@ -14,7 +14,7 @@ function App(): JSX.Element {
     primaryColor: '#ececec',
     backgroundColor: '#787878',
     accentColor: '#bce2e9',
-    secondaryColor: '#bce2e9',
+    secondaryColor: '#444444',
   });
 
   return (

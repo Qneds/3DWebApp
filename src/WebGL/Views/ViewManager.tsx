@@ -7,6 +7,7 @@ import WebGLU from 'WebGL/WebGlUtils';
 import EditView from './EditView';
 import MainView from './MainView';
 import View from './View';
+import {AppMode} from 'components/modeNavBar/ModeNavBar';
 
 
 /**
@@ -85,10 +86,10 @@ export class ViewManager {
 
   /**
    * Returns menu to display on canvas
-   * @param {number} id
+   * @param {AppMode} id
    * @return {JSX.Element | undefined}
    */
-  public returnOnScreenMenu(id: number): JSX.Element | undefined {
+  public returnOnScreenMenu(id: AppMode): JSX.Element | undefined {
     return (
       <ViewMenuManagerComponent
         viewId={id}
@@ -103,7 +104,7 @@ export default ViewManagerInst;
 
 export interface ViewMenuManagerProps {
   component : JSX.Element | undefined;
-  viewId: number
+  viewId: AppMode
 }
 
 const ViewMenuManagerComponent = (props: ViewMenuManagerProps) => {

@@ -1,0 +1,24 @@
+.tree-view ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.node-element {
+  display: flex;
+}
+
+.expand-icon {
+  transform: none;
+  transition: transform 0.2s;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.node-element-drag {
+  display: inline-flex;
+  padding: 0.5em;
+  height: min-content;
+}

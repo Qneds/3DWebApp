@@ -7,9 +7,12 @@ import WebGLI from 'WebGL/WebGl';
 import WebGLCanvasEvent, {CanvasEvent} from 'WebGL/Listeners/CanvasEvent';
 import WebGLU from 'WebGL/WebGlUtils';
 import ViewManagerInst from 'WebGL/Views/ViewManager';
+import AppModeContext from 'contexts/ModeContext';
+import {AppMode} from 'components/modeNavBar/ModeNavBar';
 
-const Viewport = ({viewId} : {viewId: number}): JSX.Element => {
+const Viewport = (): JSX.Element => {
   const color = useContext(ColorModeContext);
+  const appMode = useContext(AppModeContext);
 
   const {width, height, ref} = useResizeDetector();
   const [canvasEvent, setCanvasEvent] = useState<CanvasEvent | null>(null);
@@ -86,7 +89,8 @@ const Viewport = ({viewId} : {viewId: number}): JSX.Element => {
           position: 'absolute',
           top: 0,
         }}>
-          {ViewManagerInst.returnOnScreenMenu(viewId)}
+          {ViewManagerInst.returnOnScreenMenu(
+            appMode ? appMode.appMode : AppMode.MainMode)}
         </div>
         <canvas
           style={{
