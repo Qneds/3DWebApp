@@ -1,6 +1,6 @@
 import {Edge, Face, Point} from './MeshUtils';
 import {vec3} from 'gl-matrix';
-import {GeometryProvider} from './GeometryProvider';
+import {GeometryBuilder, GeometryProvider} from './GeometryProvider';
 
 /**
  * Circle mesh class
@@ -142,7 +142,7 @@ export class Circle implements GeometryProvider {
 /**
  * Circle builder class
  */
-export class CircleBuilder {
+export class CircleBuilder implements GeometryBuilder {
   private outerRadius = 2;
   private innerRadius = 1;
   private radialSegments = 8;

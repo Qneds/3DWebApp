@@ -1,6 +1,6 @@
 import {Edge, Face, Point} from './MeshUtils';
 import {vec3} from 'gl-matrix';
-import {GeometryProvider} from './GeometryProvider';
+import {GeometryBuilder, GeometryProvider} from './GeometryProvider';
 
 /**
  * Cube mesh class
@@ -218,7 +218,7 @@ export class Cylinder implements GeometryProvider {
 /**
  * Cylinder builder class
  */
-export class CylinderBuilder {
+export class CylinderBuilder implements GeometryBuilder {
   private radiusTop = 1;
   private radiusBottom = 1;
   private height = 1;

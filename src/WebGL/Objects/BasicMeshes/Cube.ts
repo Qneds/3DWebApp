@@ -1,6 +1,6 @@
 import {Edge, Face, Point} from './MeshUtils';
 import {vec3} from 'gl-matrix';
-import {GeometryProvider} from './GeometryProvider';
+import {GeometryBuilder, GeometryProvider} from './GeometryProvider';
 
 /**
  * Cube mesh class
@@ -112,7 +112,7 @@ export class Cube implements GeometryProvider {
 /**
  * Cube builder class
  */
-export class CubeBuilder {
+export class CubeBuilder implements GeometryBuilder {
   private xHalfWidth = 1;
   private yHalfWidth = 1;
   private zHalfWidth = 1;

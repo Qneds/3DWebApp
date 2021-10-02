@@ -6,6 +6,10 @@ export interface GeometryProvider {
   getFaces(): Face[];
 }
 
+export interface GeometryBuilder {
+  build(): GeometryProvider;
+}
+
 /**
  * Simple geometry provide class
  */

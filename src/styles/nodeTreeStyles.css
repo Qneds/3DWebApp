@@ -1,5 +1,7 @@
+
 .tree-view ul {
   list-style: none;
+  height: 100%;
   margin: 0;
   padding: 0;
 }
@@ -18,7 +20,20 @@
 }
 
 .node-element-drag {
-  display: inline-flex;
-  padding: 0.5em;
+  padding: 0.2em 0.5em;
   height: min-content;
+  border-radius: 0.2em;
+}
+
+.treeRoot {
+  height: 100%;
+}
+
+.draggingSource {
+  opacity: 0.6;
+}
+
+.dropTarget {
+  background-color: rgba(44, 44, 44, 0.5);
+  border-radius: 0.5em;
 }

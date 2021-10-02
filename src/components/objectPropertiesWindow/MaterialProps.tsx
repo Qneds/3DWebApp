@@ -98,12 +98,18 @@ const MaterialProps = (): JSX.Element=> {
           />
         </div>
       ),
-      onClose: () => setChosenColor(
-        colorPrev.current ? colorPrev.current : DEFAULT_COLOR,
-      ),
-      onCancel: () => setChosenColor(
-        colorPrev.current ? colorPrev.current : DEFAULT_COLOR,
-      ),
+      onClose: () => {
+        setChosenColor(
+          colorPrev.current ? colorPrev.current : DEFAULT_COLOR,
+        );
+        return true;
+      },
+      onCancel: () => {
+        setChosenColor(
+          colorPrev.current ? colorPrev.current : DEFAULT_COLOR,
+        );
+        return true;
+      },
       onOk: () => {
         STATE.getSelectedObject()?.getMaterial()
             .getFaceMaterial().setColor([
@@ -112,6 +118,7 @@ const MaterialProps = (): JSX.Element=> {
               chosenColor.rgb.b/255,
               chosenColor.rgb.a,
             ] as vec4);
+        return true;
       },
     });
   };

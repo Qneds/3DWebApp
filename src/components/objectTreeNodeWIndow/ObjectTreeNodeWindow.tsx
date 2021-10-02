@@ -11,10 +11,14 @@ import STATE from 'WebGL/State';
 import Object3D from 'WebGL/Objects/Object3D';
 import {RefreshMechanism} from 'contexts/RefresherContext';
 import ViewManagerInst from 'WebGL/Views/ViewManager';
+import {Disable} from 'utils/GUI/GUIUtils';
+import ModeContext from 'contexts/ModeContext';
+import {AppMode} from 'components/modeNavBar/ModeNavBar';
 
 const ObjectTreeNodeWindow = (): JSX.Element => {
   const colorModeCtx = useContext(ColorModeContext);
   const refreshMechanism = useContext(RefreshMechanism);
+  const currentViewCtx = useContext(ModeContext);
 
   const [treeData, setTreeData] = useState<NodeModel<Object3D>[]>([]);
   const [selectedNode, setSelectedNode] =
@@ -37,6 +41,20 @@ const ObjectTreeNodeWindow = (): JSX.Element => {
     }
   };
 
+  const disableOnView = (): boolean => {
+    if (currentViewCtx) {
+      switch (currentViewCtx.appMode) {
+        case AppMode.EditMode: {
+          return true;
+        }
+        default: {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleSelect = (node: NodeModel<Object3D>) => {
     // setSelectedNode(node);
 
@@ -48,7 +66,7 @@ const ObjectTreeNodeWindow = (): JSX.Element => {
 
   useEffect(() => {
     setTreeData(mapWorldToTreeData());
-  }, []);
+  }, [, refreshMechanism]);
 
   useEffect(() => {
     const selectedNode = treeData.find((node) =>
@@ -63,30 +81,37 @@ const ObjectTreeNodeWindow = (): JSX.Element => {
       }}
       backgroundColor={colorModeCtx?.colorMode.backgroundColor}
     >
-      <PanelBody>
-        <div className='tree-view'>
-          <Tree
-            tree={treeData}
-            rootId={world ? world.getId(): '0'}
-            render={(node, {depth, isOpen, onToggle}) => (
-              <NodeItem
-                node={node}
-                depth={depth}
-                isOpen={isOpen}
-                isSelected={node.id === selectedNode?.id}
-                onToggle={onToggle}
-                onSelect={handleSelect}
-              />
-            )}
-            onDrop={handleDrop}
-            dragPreviewRender={(monitorProps) => {
-              return (
-                <DragPreview monitorProps={monitorProps}/>
-              );
-            }}
-          />
-        </div>
-      </PanelBody>
+      <Disable disabled={disableOnView()}>
+        <PanelBody className='tree-view'>
+          <div className='tree-view'>
+            <Tree
+              tree={treeData}
+              rootId={world ? 'root' : ''}
+              render={(node, {depth, isOpen, onToggle}) => (
+                <NodeItem
+                  node={node}
+                  depth={depth}
+                  isOpen={isOpen}
+                  isSelected={node.id === selectedNode?.id}
+                  onToggle={onToggle}
+                  onSelect={handleSelect}
+                />
+              )}
+              onDrop={handleDrop}
+              dragPreviewRender={(monitorProps) => {
+                return (
+                  <DragPreview monitorProps={monitorProps}/>
+                );
+              }}
+              classes={{
+                root: 'treeRoot',
+                draggingSource: 'draggingSource',
+                dropTarget: 'dropTarget',
+              }}
+            />
+          </div>
+        </PanelBody>
+      </Disable>
     </Frame>
   );
 };
@@ -110,7 +135,7 @@ function mapWorldToTreeData(): NodeModel<Object3D>[] {
     const parent = obj.getParent();
     return {
       id: obj.getId(),
-      parent: parent ? parent.getId() : obj.getId(),
+      parent: parent ? parent.getId() : 'root',
       text: obj.getName(),
       droppable: true,
       data: obj,
@@ -128,10 +153,10 @@ function mapWorldToTreeData(): NodeModel<Object3D>[] {
     });
   }
   if (world) {
-    world.getChildrenList().forEach((child) => {
+    /* world.getChildrenList().forEach((child) => {
       mapChildren(child);
-    });
-    // mapChildren(world);
+    });*/
+    mapChildren(world);
   }
   return dataArr;
 }

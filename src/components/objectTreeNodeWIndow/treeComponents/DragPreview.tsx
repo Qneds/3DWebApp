@@ -1,6 +1,6 @@
 import {DragLayerMonitorProps} from '@minoru/react-dnd-treeview';
 import ColorModeContext from 'contexts/ColorModeContext';
-import React from 'react';
+import React, {useContext} from 'react';
 
 
 export interface DragPreviewProps {
@@ -8,13 +8,18 @@ export interface DragPreviewProps {
 }
 
 const DragPreview = (props: DragPreviewProps): JSX.Element => {
+  const ColorModeCtx = useContext(ColorModeContext);
   const item = props.monitorProps.item;
   return (
-    <div
+    <span
       className='node-element-drag'
-      style={{backgroundColor: 'red'}}>
-      <p>{item.text}</p>
-    </div>
+      style={{
+        color: ColorModeCtx?.colorMode.secondaryColor,
+        backgroundColor: ColorModeCtx?.colorMode.accentColor,
+      }}
+    >
+      {item.text}
+    </span>
   );
 };
 

@@ -6,9 +6,12 @@ import {StandardReactPropsInt} from 'utils/GUI/Standard';
 export interface ModalDataInt {
   header?: string;
   body?: JSX.Element;
-  onOk?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onCancel?: React.MouseEventHandler<HTMLButtonElement> | undefined
-  onClose?: React.MouseEventHandler<any> | undefined
+  onOk?: ((event: React.MouseEvent<Element, MouseEvent>) =>
+    boolean) | undefined;
+  onCancel?: ((event: React.MouseEvent<Element, MouseEvent>) =>
+    boolean) | undefined;
+  onClose?: ((event: React.MouseEvent<Element, MouseEvent>) =>
+    boolean) | undefined;
 }
 
 const ModalSystem = (props: StandardReactPropsInt): JSX.Element => {
@@ -27,8 +30,9 @@ const ModalSystem = (props: StandardReactPropsInt): JSX.Element => {
         style={props.style}
       >
         <ModalHeader toggle={(e) => {
-          if (modalData && modalData.onClose) modalData.onClose(e);
-          setIsOpen(!isOpen);
+          let close = true;
+          if (modalData && modalData.onClose) close = modalData.onClose(e);
+          if (close) setIsOpen(!isOpen);
         }}
         >
           {modalData && modalData.header ? modalData.header : ''}
@@ -38,15 +42,17 @@ const ModalSystem = (props: StandardReactPropsInt): JSX.Element => {
         </ModalBody>
         <ModalFooter>
           <Button color="primary" onClick={(e) => {
-            if (modalData && modalData.onOk) modalData.onOk(e);
-            setIsOpen(!isOpen);
+            let close = true;
+            if (modalData && modalData.onOk) close = modalData.onOk(e);
+            if (close) setIsOpen(!isOpen);
           }}
           >
             Ok
           </Button>{' '}
           <Button color="secondary" onClick={(e) => {
-            if (modalData && modalData.onCancel) modalData.onCancel(e);
-            setIsOpen(!isOpen);
+            let close = true;
+            if (modalData && modalData.onCancel) close = modalData.onCancel(e);
+            if (close) setIsOpen(!isOpen);
           }}
           >
             Cancel

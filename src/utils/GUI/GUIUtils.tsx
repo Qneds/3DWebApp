@@ -29,6 +29,14 @@ export interface GUIDropdownProps extends GUIButtonProps {
     children: React.ReactChild[] | React.ReactChild
 }
 
+export interface InputPropertyWithConfirmProps extends InputProps {
+  onConfirm?: React.MouseEventHandler<HTMLElement>;
+}
+
+export interface DisableProps extends StandardReactPropsInt {
+  disabled: boolean;
+}
+
 export const GUIButton = (props : GUIButtonProps): JSX.Element=> {
   return (
     <Button
@@ -43,6 +51,7 @@ export const GUIButton = (props : GUIButtonProps): JSX.Element=> {
           display: 'inline',
           width: '120%',
           height: '120%',
+          ...props.style,
         }}>
         {props.ico}
       </span>
@@ -147,14 +156,47 @@ export const InputProperty = (props: InputProps): JSX.Element => {
   const colorModeCtx = useContext(ColorModeContext);
   return (
     <Input
-      className='input-property-style'
+      {...props}
+      className={
+        `input-property-style ${props.className ? props.className : ''}`
+      }
       style={{
         color: colorModeCtx?.colorMode.primaryColor,
-        backgroundColor: colorModeCtx?.colorMode.secondaryColor,
+        backgroundColor: props.disabled ?
+          'grey' : colorModeCtx?.colorMode.secondaryColor,
         borderColor: colorModeCtx?.colorMode.accentColor,
+        ...props.style,
       }}
-      {...props}
     />
+  );
+};
+
+export const InputPropertyWithConfirm =
+(props: InputPropertyWithConfirmProps): JSX.Element => {
+  const colorModeCtx = useContext(ColorModeContext);
+  return (
+    <>
+      <Input
+        {...props}
+        className={
+          `input-property-style ${props.className ? props.className : ''}`
+        }
+        style={{
+          color: colorModeCtx?.colorMode.primaryColor,
+          backgroundColor: props.disabled ?
+            'grey' : colorModeCtx?.colorMode.secondaryColor,
+          borderColor: colorModeCtx?.colorMode.accentColor,
+          ...props.style,
+        }}
+      />
+      <Button
+        className='ms-2 p-2'
+        color='success'
+        onClick={props.onConfirm}
+      >
+        Confirm
+      </Button>
+    </>
   );
 };
 
@@ -231,8 +273,6 @@ export const SliderWithValueProperty = (props: SliderProps): JSX.Element => {
           height: '50%',
           width: '50%',
           marginLeft: '1em',
-          backgroundColor: 'grey',
-          color: colorModeCtx?.colorMode.primaryColor,
         }}
       />
     </>
@@ -268,6 +308,23 @@ export const ContainerWithColumns =
       }}
       className={props.className}
     >
+      {props.children}
+    </div>
+  );
+};
+
+export const Disable = (props: DisableProps): JSX.Element => {
+  return (
+    <div
+      style={props.style}
+      className={props.className}
+    >
+      {
+        props.disabled &&
+        <div
+          className='disabled-overlay'
+        />
+      }
       {props.children}
     </div>
   );

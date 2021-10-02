@@ -14,10 +14,13 @@ import {toDegrees, toRadians} from 'WebGL/utils.ts/Math';
 import ViewManagerInst from 'WebGL/Views/ViewManager';
 import MaterialProps from './MaterialProps';
 import MeshProps from './MeshProps';
+import ObjectDetailsProps from './ObjectDetailsProps';
+
+import 'styles/guiUtilsStyles.css';
 
 const InvalidValueInfo = ({invalid}: {invalid: boolean}) => {
   return (
-    <FormFeedback>
+    <FormFeedback className='input-error'>
       Provided value is invalid
     </FormFeedback>
   );
@@ -148,17 +151,17 @@ const ObjectTreeNodeWindow = (): JSX.Element => {
   }
   return (
     <PanelBody>
-
-      <CardBodyMainLabel className='mg-b--em'>
-        Details
-      </CardBodyMainLabel>
-      <CardBody>
-        <Property label='Object data'>
-          <CheckboxProperty
-            value={0}
-          />
-        </Property>
-      </CardBody>
+      {
+        (STATE.getSelectedObject() !== STATE.getWorld()) &&
+        <>
+          <CardBodyMainLabel className='mg-b--em'>
+            Details
+          </CardBodyMainLabel>
+          <CardBody>
+            <ObjectDetailsProps/>
+          </CardBody>
+        </>
+      }
 
       <CardBodyMainLabel className='mg-t--em'>
         Transformations

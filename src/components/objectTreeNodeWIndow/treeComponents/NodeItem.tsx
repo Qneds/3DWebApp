@@ -11,6 +11,7 @@ import styled from 'styled-components';
 import TypeIcon from
   'components/objectTreeNodeWIndow/treeComponents/NodeTypeIcon';
 import Object3D from 'WebGL/Objects/Object3D';
+import {BsFillTrashFill} from 'react-icons/bs';
 
 
 export interface NodeItemProps {
@@ -110,6 +111,7 @@ const NodeItem = (props: NodeItemProps): JSX.Element => {
             style={{paddingLeft: '0.2em'}}
           >
             {props.node.text}
+            <BsFillTrashFill/>
           </span>
         </span>
       </Hoverable>

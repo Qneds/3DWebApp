@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.css';
 import Main from 'components/Main';
 import ColorMode, {ColorModeContextInt, ColorModeContextValues,
   injectStyle} from 'contexts/ColorModeContext';
+import {DndProvider} from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
 
 /**
  * Main App
@@ -18,10 +20,12 @@ function App(): JSX.Element {
   });
 
   return (
-    <ColorMode.Provider value={{colorMode: colorMode, setColorMode}}>
-      {injectStyle(colorMode)}
-      <Main/>
-    </ColorMode.Provider>
+    <DndProvider backend={HTML5Backend}>
+      <ColorMode.Provider value={{colorMode: colorMode, setColorMode}}>
+        {injectStyle(colorMode)}
+        <Main/>
+      </ColorMode.Provider>
+    </DndProvider>
   );
 }
 

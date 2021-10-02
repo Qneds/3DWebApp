@@ -1,6 +1,6 @@
 import {Edge, Face, Point} from './MeshUtils';
 import {vec3} from 'gl-matrix';
-import {GeometryProvider} from './GeometryProvider';
+import {GeometryBuilder, GeometryProvider} from './GeometryProvider';
 
 /**
  * Cone mesh class
@@ -219,7 +219,7 @@ export class Cone implements GeometryProvider {
 /**
  * Cone builder class
  */
-export class ConeBuilder {
+export class ConeBuilder implements GeometryBuilder {
   private radius = 1;
   private height = 1;
   private radialSegments = 8;

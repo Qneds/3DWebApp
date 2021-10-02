@@ -1,6 +1,6 @@
 import {Edge, Face, Point} from './MeshUtils';
 import {vec3} from 'gl-matrix';
-import {GeometryProvider} from './GeometryProvider';
+import {GeometryBuilder, GeometryProvider} from './GeometryProvider';
 
 /**
  * Torus mesh class
@@ -132,7 +132,7 @@ export class Torus implements GeometryProvider {
 /**
  * Tours builder class
  */
-export class TorusBuilder {
+export class TorusBuilder implements GeometryBuilder {
   private radius = 1;
   private tube = 0.4;
   private radialSegments = 8;
