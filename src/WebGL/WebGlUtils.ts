@@ -135,7 +135,7 @@ export class WebGLUtils {
       return;
     }
     this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER,
-        new Uint32Array(data), this.gl.STATIC_DRAW);
+        new Uint16Array(data), this.gl.STATIC_DRAW);
   }
 
   /**
@@ -400,6 +400,112 @@ export class WebGLUtils {
     this.bindElementArrayBuffer(buffer);
     this.addElementArrayBufferData(data);
     this.unbindElementArrayBuffer();
+  }
+
+
+  /**
+   * Draws elements from binded buffer
+   * @param {number} type
+   * @param {number} length
+   * @return {void}
+   */
+  public drawElements(type: number, length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.gl.drawElements(
+        type,
+        length,
+        this.gl.UNSIGNED_SHORT, 0);
+  }
+
+  /**
+   * Draws triangle elements from binded buffer
+   * @param {number} length
+   * @return {void}
+   */
+  public drawElementsTriangle(length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.drawElements(this.gl.TRIANGLES, length);
+  }
+
+  /**
+   * Draws edges elements from binded buffer
+   * @param {number} length
+   * @return {void}
+   */
+  public drawElementsEdge(length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.drawElements(this.gl.LINES, length);
+  }
+
+  /**
+   * Draws edges elements from binded buffer
+   * @param {number} length
+   * @return {void}
+   */
+  public drawElementsPoint(length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.drawElements(this.gl.POINTS, length);
+  }
+
+
+  /**
+   * Draw array from binded buffer
+   * @param {number} type
+   * @param {number} length
+   * @return {void}
+   */
+  public drawArrays(type: number, length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.gl.drawArrays(
+        type,
+        0,
+        length);
+  }
+
+  /**
+   * Draw triangle array from binded buffer
+   * @param {number} length
+   * @return {void}
+   */
+  public drawArraysTriangle(length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.drawArrays(this.gl.TRIANGLES, length);
+  }
+
+  /**
+   * Draw edges array from binded buffer
+   * @param {number} length
+   * @return {void}
+   */
+  public drawArraysEdge(length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.drawArrays(this.gl.LINES, length);
+  }
+
+  /**
+   * Draw point array from binded buffer
+   * @param {number} length
+   * @return {void}
+   */
+  public drawArraysPoint(length: number): void {
+    if (!this.gl) {
+      return;
+    }
+    this.drawArrays(this.gl.POINTS, length);
   }
 }
 

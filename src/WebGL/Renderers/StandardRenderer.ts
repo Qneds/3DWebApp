@@ -24,55 +24,6 @@ export default class StandardRenderer {
   }
 
   /**
-   * Renders next frame
-   *//*
-  public renderFrame(): void {
-    WebGLU.clear(0, 0, 0, 0.5);
-    WebGLU.viewport();
-    WebGLU.enableDepthTest(true);
-
-    const shader = new BasicShader();
-    shader.use();
-
-    shader.enableViewProjectionMatrices(
-        this.camera.getLookAtMatrix(),
-        this.camera.getProjectionMatrix());
-
-    const vb = WebGLU.createBuffer();
-    if (!vb) {
-      return;
-    }
-    WebGLU.bindArrayBuffer(vb);
-    WebGLU.addArrayBufferData(vertices);
-    WebGLU.unbindArrayBuffer();
-
-    const ib = WebGLU.createBuffer();
-    if (!ib) {
-      return;
-    }
-    WebGLU.bindElementArrayBuffer(ib);
-    WebGLU.addElementArrayBufferData(indices);
-    WebGLU.unbindElementArrayBuffer();
-
-    WebGLU.bindArrayBuffer(vb);
-
-    const gl = WebGLU.returnWebGLContext();
-    if (!gl) return;
-
-    const p = shader.getProgram();
-    if (!p) return;
-    const positionAttribute =
-      WebGLU.getAttribLocation(p,
-          ShaderUniformsLocations.POSITION);
-    console.log(positionAttribute);
-    shader.enablePosition();
-    WebGLU.bindElementArrayBuffer(ib);
-    gl.drawElements(
-        gl.TRIANGLES, indices.length,
-        gl.UNSIGNED_INT, 0);
-  }*/
-
-  /**
    *
    */
   public renderFrame(): void {

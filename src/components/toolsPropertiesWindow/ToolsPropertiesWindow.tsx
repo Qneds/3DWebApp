@@ -5,10 +5,12 @@ import ToolsManagerInst from 'components/toolsWIndow/ToolsManager';
 import {PanelBody} from 'utils/GUI/Panels';
 import {RefreshMechanism} from 'contexts/RefresherContext';
 import Drawer from './Drawer';
+import ColorModeContext from 'contexts/ColorModeContext';
 
 
 const ToolsPropertiesWindow = (): JSX.Element=> {
   const refreshMechanism = useContext(RefreshMechanism);
+  const colorModeCtx = useContext(ColorModeContext);
   const [rerender, setRerender] = useState(true);
   /*
   useEffect(() =>{
@@ -32,11 +34,14 @@ const ToolsPropertiesWindow = (): JSX.Element=> {
     <Frame
       style={{
         height: '100%',
+        backgroundColor: colorModeCtx?.colorMode.backgroundColor,
       }}
     >
       <PanelBody>
-        {rerender && tool !== null &&
-          comp}
+        {rerender && tool !== null ?
+          comp :
+          <div/>
+        }
       </PanelBody>
     </Frame>
   );

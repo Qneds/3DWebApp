@@ -21,6 +21,7 @@ export default class RayCaster {
   private obj: Object3D | RayCastable;
   private mode: RayCasterMode;
   private recursion: boolean;
+  private areaRange: number;
 
   /**
    * Creates new RayCaster
@@ -28,13 +29,16 @@ export default class RayCaster {
    * @param {Object3D | RayCastable} obj
    * @param {RayCasterMode} mode
    * @param {boolean} recursion
+   * @param {number} areaRange
    */
   constructor(ray: Ray, obj: Object3D | RayCastable,
-      mode: RayCasterMode = RayCasterMode.hitbox, recursion = true) {
+      mode: RayCasterMode = RayCasterMode.hitbox,
+      recursion = true, areaRange = 0.1) {
     this.ray = ray;
     this.obj = obj;
     this.mode = mode;
     this.recursion = recursion;
+    this.areaRange = areaRange;
   }
 
 
@@ -122,6 +126,22 @@ export default class RayCaster {
    */
   public setRaycastable(obj: Object3D | RayCastable): void {
     this.obj = obj;
+  }
+
+  /**
+   * Get area range of ray
+   * @return {Ray}
+   */
+  public getAreaRange(): number {
+    return this.areaRange;
+  }
+
+  /**
+   * Set area range of ray
+   * @param {number} areaRange
+   */
+  public setAreaRange(areaRange: number): void {
+    this.areaRange = areaRange;
   }
 }
 

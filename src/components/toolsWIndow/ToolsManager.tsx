@@ -11,6 +11,7 @@ export enum ETools {
   move,
   rotate,
   scale,
+  surfaceSubdivision,
 }
 
 export interface IViewToolSelector {
@@ -39,7 +40,9 @@ export class ToolsManager {
       );
     } else if (editViewModeCtx && viewModeCtx?.appMode === AppMode.EditMode) {
       return (
-        <EditViewToolsSelector updateSelectedTool={this.setSelectedTool}/>
+        <EditViewToolsSelector
+          updateSelectedTool={this.setSelectedTool.bind(this)}
+        />
       );
     } else {
       return (<></>);

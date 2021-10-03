@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {MoveButton, RotateButton, ScaleButton} from 'utils/GUI/GUIUtils';
+import {MoveButton, RotateButton, ScaleButton,
+  SubdivideButton} from 'utils/GUI/GUIUtils';
 import ViewManagerInst from 'WebGL/Views/ViewManager';
 import MainView from 'WebGL/Views/MainView';
 import {GizmoModes} from 'WebGL/Editor/Gizmos/GizmoManager';
@@ -8,6 +9,9 @@ import EditView, {EditViewMode} from 'WebGL/Views/EditView';
 import {tableRowStyle} from 'styles/jsStyles';
 import ColorModeContext from 'contexts/ColorModeContext';
 import EditModeContext from 'contexts/EditModeContext';
+import {ITool, MoveTool, RotateTool, ScaleTool} from 'WebGL/Editor/Tools/Tools';
+import TOOL_STORAGE from './ToolStorage';
+import {Refresher} from 'contexts/RefresherContext';
 
 /**
  * Returns tools table for edit view
@@ -18,10 +22,39 @@ export function EditViewToolsSelector(props: IViewToolSelector): JSX.Element {
   const editViewModeCtx = useContext(EditModeContext);
   const [actActive, setActActive] = useState(ETools.move);
   const colorModeCtx = useContext(ColorModeContext);
+  const refresher = useContext(Refresher);
 
   useEffect(() => {
     setActActive(ETools.move);
+    props.updateSelectedTool(TOOL_STORAGE.getToolByType(MoveTool));
   }, [editViewModeCtx]);
+
+  /**
+   * @param {ETools} t
+   * @param {boolean} isInit
+   * @return {ETools}
+   */
+  function setTool(t: ETools, isInit = false): ETools {
+    let tool: ITool | null = null;
+    switch (t) {
+      case ETools.move: {
+        tool = TOOL_STORAGE.getToolByType(MoveTool);
+        break;
+      }
+      case ETools.rotate: {
+        tool = TOOL_STORAGE.getToolByType(RotateTool);
+        break;
+      }
+      case ETools.scale: {
+        tool = TOOL_STORAGE.getToolByType(ScaleTool);
+        break;
+      }
+    }
+    props.updateSelectedTool(tool);
+    if (!isInit) setActActive(t);
+    refresher?.refresh();
+    return t;
+  }
 
   const view = (ViewManagerInst.returnView() as EditView);
   return (
@@ -34,7 +67,7 @@ export function EditViewToolsSelector(props: IViewToolSelector): JSX.Element {
           <td>
             <MoveButton text={'Move'} onClick={() => {
               if (actActive === ETools.move) return;
-              setActActive(ETools.move);
+              setTool(ETools.move);
               view.setGizmoMode(GizmoModes.move);
             }}
             className='fill-parent-width'
@@ -49,7 +82,7 @@ export function EditViewToolsSelector(props: IViewToolSelector): JSX.Element {
           <td>
             <RotateButton text={'Rotate'} onClick={() => {
               if (actActive === ETools.rotate) return;
-              setActActive(ETools.rotate);
+              setTool(ETools.rotate);
               view.setGizmoMode(GizmoModes.rotate);
             }}
             className='fill-parent-width'
@@ -64,11 +97,25 @@ export function EditViewToolsSelector(props: IViewToolSelector): JSX.Element {
           <td>
             <ScaleButton text={'Scale'} onClick={() => {
               if (actActive === ETools.scale) return;
-              setActActive(ETools.scale);
+              setTool(ETools.scale);
               view.setGizmoMode(GizmoModes.scale);
             }}
             className='fill-parent-width'
             active={actActive === ETools.scale} />
+          </td>
+        </tr>
+      }
+      {
+        (editViewModeCtx && (editViewModeCtx.editMode === EditViewMode.face)) &&
+        <tr style={tableRowStyle(colorModeCtx)}>
+          <td>
+            <SubdivideButton text={'Surface Subdivision'} onClick={() => {
+              if (actActive === ETools.surfaceSubdivision) return;
+              setTool(ETools.surfaceSubdivision);
+              view.setGizmoMode(GizmoModes.gizmoUnused);
+            }}
+            className='fill-parent-width'
+            active={actActive === ETools.surfaceSubdivision} />
           </td>
         </tr>
       }

@@ -113,6 +113,7 @@ export default class EditRenderer {
       if (this.selectedFace) {
         const materialF = SPECIAL_MATERIALS.getSelectedFaceMaterial();
         if (materialF) {
+          console.log(materialF.getFaceMaterial().getColor());
           const shaderF = materialF.getFaceMaterial().getShader();
           setUpShader(shaderF, this.camera, transform);
           materialF.getFaceMaterial().enableMaterial();
@@ -121,21 +122,26 @@ export default class EditRenderer {
       }
 
 
-      const material = this.objToRender.getMaterial();
-      const shaderF = material.getFaceMaterial().getShader();
-      setUpShader(shaderF, this.camera, transform);
-      material.getFaceMaterial().enableMaterial();
-      mesh.drawFaces(shaderF);
+      let material = SPECIAL_MATERIALS.getEditModeObjectMaterial();
+      if (!material) {
+        material = this.objToRender.getMaterial();
+      }
+      if (material) {
+        const shaderF = material.getFaceMaterial().getShader();
+        setUpShader(shaderF, this.camera, transform);
+        material.getFaceMaterial().enableMaterial();
+        mesh.drawFaces(shaderF);
 
-      const shaderE = material.getEdgeMaterial().getShader();
-      setUpShader(shaderE, this.camera, transform);
-      material.getEdgeMaterial().enableMaterial();
-      mesh.drawEdges(shaderE);
+        const shaderE = material.getEdgeMaterial().getShader();
+        setUpShader(shaderE, this.camera, transform);
+        material.getEdgeMaterial().enableMaterial();
+        mesh.drawEdges(shaderE);
 
-      const shaderP = material.getPointMaterial().getShader();
-      setUpShader(shaderP, this.camera, transform);
-      material.getPointMaterial().enableMaterial();
-      mesh.drawPoints(shaderP);
+        const shaderP = material.getPointMaterial().getShader();
+        setUpShader(shaderP, this.camera, transform);
+        material.getPointMaterial().enableMaterial();
+        mesh.drawPoints(shaderP);
+      }
     }
   }
 }

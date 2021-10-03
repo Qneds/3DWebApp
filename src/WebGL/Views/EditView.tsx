@@ -25,8 +25,10 @@ import ViewManagerInst from './ViewManager';
 import {AiOutlineLine} from 'react-icons/ai';
 import {GiPlainSquare} from 'react-icons/gi';
 import {HiOutlineDotsHorizontal} from 'react-icons/hi';
-import {MoveTool, RotateTool, ScaleTool} from 'WebGL/Editor/Tools/Tools';
+import {checkIfToolIsGizmoTool, IGizmoTool, MoveTool,
+  RotateTool, ScaleTool} from 'WebGL/Editor/Tools/Tools';
 import TOOL_STORAGE from 'components/toolsWIndow/ToolStorage';
+import ToolsManagerInst from 'components/toolsWIndow/ToolsManager';
 
 export enum EditViewMode {
   face = 'face',
@@ -154,16 +156,16 @@ export default class EditView extends View implements GizmoManipListener {
       switch (this.mode) {
         case EditViewMode.point: {
           const p = getClosestPointOfObj(o.hits);
-          this.handlePointHits(p, f);
+          this.handlePointHits(p, f, o.hittedObject);
           break;
         }
         case EditViewMode.edge: {
           const e = getClosestEdgeOfObj(o.hits);
-          this.handleEdgeHits(e, f);
+          this.handleEdgeHits(e, f, o.hittedObject);
           break;
         }
         case EditViewMode.face: {
-          this.handleFaceHits(f);
+          this.handleFaceHits(f, o.hittedObject);
           break;
         }
       }
@@ -195,14 +197,21 @@ export default class EditView extends View implements GizmoManipListener {
    * selects point
    * @param {PointHit | null} pointH
    * @param {FaceHit | null} faceH
+   * @param {Object3D} obj
    */
-  private handlePointHits(pointH: PointHit | null, faceH: FaceHit | null):
+  private handlePointHits(pointH: PointHit | null,
+      faceH: FaceHit | null, obj: Object3D):
       void {
     if (pointH && (!faceH || (faceH && pointH.distance < faceH.distance))) {
       this.selectedPoint = pointH.point;
-      this.updateCenterPoint(pointH.point);
+      ToolsManagerInst.getSelectedTool()
+          ?.onSelectPoint(this.selectedPoint, obj);
       this.renderer.selectPoint(pointH.point);
-      this.gizmo.activate();
+
+      if (checkIfToolIsGizmoTool(ToolsManagerInst.getSelectedTool())) {
+        this.updateCenterPoint(pointH.point);
+        this.gizmo.activate();
+      }
     } else {
       this.renderer.unselectPoint();
       this.selectedPoint = null;
@@ -216,13 +225,19 @@ export default class EditView extends View implements GizmoManipListener {
    * selects edge
    * @param {EdgeHit | null} edgeH
    * @param {FaceHit | null} faceH
+   * @param {Object3D} obj
    */
-  private handleEdgeHits(edgeH: EdgeHit | null, faceH: FaceHit | null): void {
+  private handleEdgeHits(edgeH: EdgeHit | null,
+      faceH: FaceHit | null, obj: Object3D): void {
     if (edgeH && (!faceH || (faceH && edgeH.distance < faceH.distance))) {
       this.selectedEdge = edgeH.edge;
-      this.updateCenterPoint(edgeH.edge);
+      ToolsManagerInst.getSelectedTool()?.onSelectEdge(this.selectedEdge, obj);
       this.renderer.selectEdge(edgeH.edge);
-      this.gizmo.activate();
+
+      if (checkIfToolIsGizmoTool(ToolsManagerInst.getSelectedTool())) {
+        this.updateCenterPoint(edgeH.edge);
+        this.gizmo.activate();
+      }
     } else {
       this.renderer.unselectEdge();
       vec3.zero(this.gizmoPoint);
@@ -237,13 +252,18 @@ export default class EditView extends View implements GizmoManipListener {
   /**
    * selects face
    * @param {FaceHit | null} faceH
+   * @param {Object3D} obj
    */
-  private handleFaceHits(faceH: FaceHit | null): void {
+  private handleFaceHits(faceH: FaceHit | null, obj: Object3D): void {
     if (faceH) {
       this.selectedFace = faceH.face;
-      this.updateCenterPoint(faceH.face);
+      ToolsManagerInst.getSelectedTool()?.onSelectFace(this.selectedFace, obj);
       this.renderer.selectFace(faceH.face);
-      this.gizmo.activate();
+
+      if (checkIfToolIsGizmoTool(ToolsManagerInst.getSelectedTool())) {
+        this.updateCenterPoint(faceH.face);
+        this.gizmo.activate();
+      }
     } else {
       this.renderer.unselectFace();
       vec3.zero(this.gizmoPoint);

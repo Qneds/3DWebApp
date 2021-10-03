@@ -15,7 +15,8 @@ import {GizmoManipEvent, GizmoManipListener} from './GizmoManipEvent';
 export enum GizmoModes {
   move,
   rotate,
-  scale
+  scale,
+  gizmoUnused,
 }
 
 /**
@@ -115,7 +116,7 @@ export default class GizmoManager implements MouseListener {
    * Renders gizmo
    */
   public render(): void {
-    if (!this.isActive) return;
+    if (!this.isActive || this.mode === GizmoModes.gizmoUnused) return;
     WebGLU.clearDepthBuffer();
     let toDraw = new Object3D();
     switch (this.mode) {
@@ -148,7 +149,7 @@ export default class GizmoManager implements MouseListener {
    * @return {boolean}
    */
   public raycastGizmo(ray: Ray): boolean {
-    if (!this.isActive) return false;
+    if (!this.isActive || this.mode === GizmoModes.gizmoUnused) return false;
     this.raycaster.setRay(ray);
 
     let gizX = this.moveGizmo.getGizmoX();

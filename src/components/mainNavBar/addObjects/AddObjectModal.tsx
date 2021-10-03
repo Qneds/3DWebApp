@@ -13,8 +13,11 @@ const CUBE_BUILDER = new CubeBuilder();
 const CYLINDER_BUILDER = new CylinderBuilder();
 const TORUS_BUILDER = new TorusBuilder();
 
+const gt0ErrMsg = 'Value must be greater than 0';
+const notIntErrMsg = 'Provided value is not an integer';
+
 type SignalGlobalErrorProp = {
-  markError: React.Dispatch<React.SetStateAction<boolean>>;
+  markError: (e: boolean) => void;
 };
 
 type SelectCurrentBuilderProp = {
@@ -30,7 +33,7 @@ type SelectCurrentBuilderProp = {
  */
 function extractValue(
     value: string,
-    signalErr: React.Dispatch<React.SetStateAction<boolean>>,
+    signalErr: (e: boolean) => void,
     setErrMsg: React.Dispatch<React.SetStateAction<string>>,
 ): number | undefined {
   const valueNum = parseFloat(value);
@@ -46,8 +49,8 @@ interface InputElementProps {
   label: string;
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  isInvalid: boolean
-  msgIfInvalid: boolean
+  isInvalid: boolean;
+  msgIfInvalid: string;
 }
 
 const InputElement = (props: InputElementProps): JSX.Element => {
@@ -78,27 +81,27 @@ JSX.Element => {
       case 'Circle': {
         props.currentBuilderRef.current =
           CIRCLE_BUILDER ? CIRCLE_BUILDER : undefined;
-        return <CircleMeshProperties markError={props.markError} />;
+        return <CircleMeshProperties markError={props.markError}/>;
       }
       case 'Cone': {
         props.currentBuilderRef.current =
           CONE_BUILDER ? CONE_BUILDER : undefined;
-        return <div/>;
+        return <ConeMeshProperties markError={props.markError}/>;
       }
       case 'Cube': {
         props.currentBuilderRef.current =
           CUBE_BUILDER ? CUBE_BUILDER : undefined;
-        return <div/>;
+        return <CubeMeshProperties markError={props.markError}/>;
       }
       case 'Cylinder': {
         props.currentBuilderRef.current =
           CYLINDER_BUILDER ? CYLINDER_BUILDER : undefined;
-        return <div/>;
+        return <CylinderMeshProperties markError={props.markError}/>;
       }
       case 'Torus': {
         props.currentBuilderRef.current =
           TORUS_BUILDER ? TORUS_BUILDER : undefined;
-        return <div/>;
+        return <TorusMeshProperties markError={props.markError}/>;
       }
       default: {
         props.currentBuilderRef.current = null;
@@ -142,7 +145,6 @@ const CircleMeshProperties = (props: SignalGlobalErrorProp): JSX.Element => {
   const initInnRadius = 1;
   const initOutRadius = 2;
   const initRadialSeg = 4;
-  const gt0ErrMsg = 'Value must be greater than 0';
 
   const [innerRadius, setInnerRadius] = useState(initInnRadius + '');
   const [isInnerRadiusInvalid, setIsInnerRadiusInvalid] = useState(false);
@@ -214,7 +216,7 @@ const CircleMeshProperties = (props: SignalGlobalErrorProp): JSX.Element => {
           CIRCLE_BUILDER.setRadialSegments(fValue);
         } else {
           setIsNumOfRadSegInvalid(true);
-          setInvalidMessageNumRad('Provided value is not an integer');
+          setInvalidMessageNumRad(notIntErrMsg);
         }
       } else {
         setIsNumOfRadSegInvalid(true);
@@ -276,7 +278,6 @@ const ConeMeshProperties = (props: SignalGlobalErrorProp): JSX.Element => {
   const initHeightSegments = 1;
   const initRadialSegments = 4;
   const initBaseRadius = 1;
-  const gt0ErrMsg = 'Value must be greater than 0';
 
   const [height, setHeight] = useState(initHeight + '');
   const [isHeightInvalid, setIsHeightInvalid] = useState(false);
@@ -301,4 +302,581 @@ const ConeMeshProperties = (props: SignalGlobalErrorProp): JSX.Element => {
         setRadialSegments(initRadialSegments).setRadius(initBaseRadius);
     props.markError(false);
   }, []);
+
+  useEffect(() => {
+    props.markError(
+        isHeightInvalid ||
+        isHeightSegmentsInvalid ||
+        isBaseRadiusInvalid ||
+        isNumOfRadSegInvalid,
+    );
+  }, [isHeightInvalid, isHeightSegmentsInvalid,
+    isNumOfRadSegInvalid, isBaseRadiusInvalid]);
+
+  const handleHeight = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsHeightInvalid(false);
+    setHeight(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsHeightInvalid, setInvalidMessageHeight);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CONE_BUILDER.setHeight(fValue);
+      } else {
+        setIsHeightInvalid(true);
+        setInvalidMessageHeight(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleHeightSegments = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setHeightSegmentsInvalid(false);
+    setHeightSegments(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setHeightSegmentsInvalid, setInvalidMessageHeightSegments);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        if (Number.isInteger(fValue)) {
+          CONE_BUILDER.setHeightSegments(fValue);
+        } else {
+          setHeightSegmentsInvalid(true);
+          setInvalidMessageHeightSegments(notIntErrMsg);
+        }
+      } else {
+        setHeightSegmentsInvalid(true);
+        setInvalidMessageHeightSegments(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleRadialSegments = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsNumOfRadSegInvalid(false);
+    setNumOfRadSeg(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsNumOfRadSegInvalid, setInvalidMessageNumRad);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        if (Number.isInteger(fValue)) {
+          CONE_BUILDER.setRadialSegments(fValue);
+        } else {
+          setIsNumOfRadSegInvalid(true);
+          setInvalidMessageNumRad(notIntErrMsg);
+        }
+      } else {
+        setIsNumOfRadSegInvalid(true);
+        setInvalidMessageNumRad(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleRadius = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setBaseRadiusInvalid(false);
+    setBaseRadius(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setBaseRadiusInvalid, setInvalidMessageBaseRadius);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CONE_BUILDER.setRadius(fValue);
+      } else {
+        setBaseRadiusInvalid(true);
+        setInvalidMessageBaseRadius(gt0ErrMsg);
+      }
+    }
+  };
+
+  return (
+    <>
+      <InputElement
+        label={'Height'}
+        value={height}
+        onChange={handleHeight}
+        isInvalid={isHeightInvalid}
+        msgIfInvalid={invalidMessageHeight}
+      />
+      <InputElement
+        label={'Number of height segments'}
+        value={heightSegments}
+        onChange={handleHeightSegments}
+        isInvalid={isHeightSegmentsInvalid}
+        msgIfInvalid={invalidMessageHeightSegments}
+      />
+      <InputElement
+        label={'Radius'}
+        value={baseRadius}
+        onChange={handleRadius}
+        isInvalid={isBaseRadiusInvalid}
+        msgIfInvalid={invalidMessageBaseRadius}
+      />
+      <InputElement
+        label={'Number of radial segments'}
+        value={numOfRadSeg}
+        onChange={handleRadialSegments}
+        isInvalid={isNumOfRadSegInvalid}
+        msgIfInvalid={invalidMessageNumRad}
+      />
+    </>
+  );
+};
+
+
+const CubeMeshProperties = (props: SignalGlobalErrorProp): JSX.Element => {
+  const initXHalf = 1;
+  const initYHalf = 1;
+  const initZHalf = 1;
+
+  const [xHalfWidth, setXHalfWidth] = useState(initXHalf + '');
+  const [isXHalfWidthInvalid, setIsXHalfWidthInvalid] = useState(false);
+  const [invalidMessageXHalfWidth, setInvalidMessageXHalfWidth] = useState('');
+
+  const [yHalfWidth, setYHalfWidth] = useState(initYHalf + '');
+  const [isYHalfWidthInvalid, setIsYHalfWidthInvalid] = useState(false);
+  const [invalidMessageYHalfWidth, setInvalidMessageYHalfWidth] = useState('');
+
+  const [zHalfWidth, setZHalfWidth] = useState(initZHalf + '');
+  const [isZHalfWidthInvalid, setIsZHalfWidthInvalid] = useState(false);
+  const [invalidMessageZHalfWidth, setInvalidMessageZHalfWidth] = useState('');
+
+  useEffect(() => {
+    CUBE_BUILDER.setXHalfWidth(initXHalf)
+        .setYHalfWidth(initYHalf).setZHalfWidth(initZHalf);
+    props.markError(false);
+  }, []);
+
+  useEffect(() => {
+    props.markError(
+        isXHalfWidthInvalid ||
+        isYHalfWidthInvalid ||
+        isZHalfWidthInvalid,
+    );
+  }, [isXHalfWidthInvalid, isYHalfWidthInvalid,
+    isZHalfWidthInvalid]);
+
+  const handleXHalfWidth = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsXHalfWidthInvalid(false);
+    setXHalfWidth(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsXHalfWidthInvalid, setInvalidMessageXHalfWidth);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CUBE_BUILDER.setXHalfWidth(fValue);
+      } else {
+        setIsXHalfWidthInvalid(true);
+        setInvalidMessageXHalfWidth(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleYHalfWidth = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsYHalfWidthInvalid(false);
+    setYHalfWidth(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsYHalfWidthInvalid, setInvalidMessageYHalfWidth);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CUBE_BUILDER.setYHalfWidth(fValue);
+      } else {
+        setIsYHalfWidthInvalid(true);
+        setInvalidMessageYHalfWidth(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleZHalfWidth = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsZHalfWidthInvalid(false);
+    setZHalfWidth(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsZHalfWidthInvalid, setInvalidMessageZHalfWidth);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CUBE_BUILDER.setZHalfWidth(fValue);
+      } else {
+        setIsZHalfWidthInvalid(true);
+        setInvalidMessageZHalfWidth(gt0ErrMsg);
+      }
+    }
+  };
+
+  return (
+    <>
+      <InputElement
+        label={'Distance from center to X side'}
+        value={xHalfWidth}
+        onChange={handleXHalfWidth}
+        isInvalid={isXHalfWidthInvalid}
+        msgIfInvalid={invalidMessageXHalfWidth}
+      />
+      <InputElement
+        label={'Distance from center to Y side'}
+        value={yHalfWidth}
+        onChange={handleYHalfWidth}
+        isInvalid={isYHalfWidthInvalid}
+        msgIfInvalid={invalidMessageYHalfWidth}
+      />
+      <InputElement
+        label={'Distance from center to Z side'}
+        value={zHalfWidth}
+        onChange={handleZHalfWidth}
+        isInvalid={isZHalfWidthInvalid}
+        msgIfInvalid={invalidMessageZHalfWidth}
+      />
+    </>
+  );
+};
+
+const CylinderMeshProperties = (props: SignalGlobalErrorProp): JSX.Element => {
+  const initHeight = 2;
+  const initHeightSegments = 1;
+  const initRadialSegments = 4;
+  const initRadiusTop = 1;
+  const initRadiusBottom = 1;
+  const initIsOpenEnded = false;
+
+  const [height, setHeight] = useState(initHeight + '');
+  const [isHeightInvalid, setIsHeightInvalid] = useState(false);
+  const [invalidMessageHeight, setInvalidMessageHeight] = useState('');
+
+  const [heightSegments, setHeightSegments] = useState(initHeightSegments + '');
+  const [isHeightSegmentsInvalid, setIsHeightSegmentsInvalid] = useState(false);
+  const [invalidMessageHeightSegments, setInvalidMessageHeightSegments] =
+    useState('');
+
+  const [radialSegments, setRadialSegments] = useState(initRadialSegments + '');
+  const [isRadialSegmentsInvalid, setIsRadialSegmentsInvalid] = useState(false);
+  const [invalidMessageRadialSegments, setInvalidMessageRadialSegments] =
+    useState('');
+
+  const [radiusTop, setRadiusTop] = useState(initRadiusTop + '');
+  const [isRadiusTopInvalid, setIsRadiusTopInvalid] = useState(false);
+  const [invalidMessageRadiusTop, setInvalidMessageRadiusTop] =
+      useState('');
+
+  const [radiusBottom, setRadiusBottom] = useState(initRadiusBottom + '');
+  const [isRadiusBottomInvalid, setIsRadiusBottomInvalid] = useState(false);
+  const [invalidMessageRadiusBottom, setInvalidMessageRadiusBottom] =
+          useState('');
+
+  const [isOpenEnded, setIsOpenEnded] = useState(initIsOpenEnded);
+
+  useEffect(() => {
+    CYLINDER_BUILDER.setHeight(initHeight).setHeightSegments(initHeightSegments)
+        .setRadialSegments(initRadialSegments).setRadiusBottom(initRadiusBottom)
+        .setRadiusTop(initRadiusTop).setOpenEnded(initIsOpenEnded);
+    props.markError(false);
+  }, []);
+
+  useEffect(() => {
+    props.markError(
+        isHeightInvalid ||
+        isHeightSegmentsInvalid ||
+        isRadialSegmentsInvalid ||
+        isRadiusTopInvalid ||
+        isRadiusBottomInvalid,
+    );
+  }, [isHeightInvalid, isHeightSegmentsInvalid, isRadiusBottomInvalid,
+    isRadialSegmentsInvalid, isRadiusTopInvalid]);
+
+  const handleHeight = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsHeightInvalid(false);
+    setHeight(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsHeightInvalid, setInvalidMessageHeight);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CYLINDER_BUILDER.setHeight(fValue);
+      } else {
+        setIsHeightInvalid(true);
+        setInvalidMessageHeight(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleHeightSegments = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsHeightSegmentsInvalid(false);
+    setHeightSegments(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsHeightSegmentsInvalid, setInvalidMessageHeightSegments);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        if (Number.isInteger(fValue)) {
+          CYLINDER_BUILDER.setHeightSegments(fValue);
+        } else {
+          setIsHeightSegmentsInvalid(true);
+          setInvalidMessageHeightSegments(notIntErrMsg);
+        }
+      } else {
+        setIsHeightSegmentsInvalid(true);
+        setInvalidMessageHeightSegments(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleRadialSegments = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsRadialSegmentsInvalid(false);
+    setRadialSegments(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsRadialSegmentsInvalid, setInvalidMessageRadialSegments);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        if (Number.isInteger(fValue)) {
+          CYLINDER_BUILDER.setRadialSegments(fValue);
+        } else {
+          setIsRadialSegmentsInvalid(true);
+          setInvalidMessageRadialSegments(notIntErrMsg);
+        }
+      } else {
+        setIsRadialSegmentsInvalid(true);
+        setInvalidMessageRadialSegments(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleRadiusTop = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsRadiusTopInvalid(false);
+    setRadiusTop(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsRadiusTopInvalid, setInvalidMessageRadiusTop);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CYLINDER_BUILDER.setRadiusTop(fValue);
+      } else {
+        setIsRadiusTopInvalid(true);
+        setInvalidMessageRadiusTop(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleRadiusBottom = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsRadiusBottomInvalid(false);
+    setRadiusBottom(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsRadiusBottomInvalid, setInvalidMessageRadiusBottom);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        CYLINDER_BUILDER.setRadiusBottom(fValue);
+      } else {
+        setIsRadiusBottomInvalid(true);
+        setInvalidMessageRadiusBottom(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleOpenEnded = () => {
+    setIsOpenEnded(!isOpenEnded);
+    CYLINDER_BUILDER.setOpenEnded(!isOpenEnded);
+  };
+
+  return (
+    <>
+      <InputElement
+        label={'Height'}
+        value={height}
+        onChange={handleHeight}
+        isInvalid={isHeightInvalid}
+        msgIfInvalid={invalidMessageHeight}
+      />
+      <InputElement
+        label={'Number of height segments'}
+        value={heightSegments}
+        onChange={handleHeightSegments}
+        isInvalid={isHeightSegmentsInvalid}
+        msgIfInvalid={invalidMessageHeightSegments}
+      />
+      <InputElement
+        label={'Number of radial segments'}
+        value={radialSegments}
+        onChange={handleRadialSegments}
+        isInvalid={isRadialSegmentsInvalid}
+        msgIfInvalid={invalidMessageRadialSegments}
+      />
+      <InputElement
+        label={'Radius at the top'}
+        value={radiusTop}
+        onChange={handleRadiusTop}
+        isInvalid={isRadiusTopInvalid}
+        msgIfInvalid={invalidMessageRadiusTop}
+      />
+      <InputElement
+        label={'Radius at the bottom'}
+        value={radiusBottom}
+        onChange={handleRadiusBottom}
+        isInvalid={isRadiusBottomInvalid}
+        msgIfInvalid={invalidMessageRadiusBottom}
+      />
+
+      <FormGroup>
+        <Label>
+          Open cylinder
+        </Label>
+        <Input
+          type='checkbox'
+          checked={isOpenEnded}
+          onChange={handleOpenEnded}
+        />
+      </FormGroup>
+    </>
+  );
+};
+
+const TorusMeshProperties = (props: SignalGlobalErrorProp): JSX.Element => {
+  const initRadius= 2;
+  const initTubeRadius = 0.5;
+  const initRadialSegments = 4;
+  const initTubularSegments = 8;
+
+  const [radius, setRadius] = useState(initRadius + '');
+  const [isRadiusInvalid, setIsRadiusInvalid] = useState(false);
+  const [invalidMessageRadius, setInvalidMessageRadius] = useState('');
+
+  const [tubeRadius, setTubeRadius] = useState(initTubeRadius + '');
+  const [isTubeRadiusInvalid, setIsTubeRadiusInvalid] = useState(false);
+  const [invalidMessageTubeRadius, setInvalidMessageTubeRadius] = useState('');
+
+  const [radialSegments, setRadialSegments] = useState(initRadialSegments + '');
+  const [isRadialSegmentsInvalid, setIsRadialSegmentsInvalid] = useState(false);
+  const [invalidMessageRadialSegments, setInvalidMessageRadialSegments] =
+    useState('');
+
+  const [tubularSegments, setTubularSegments] =
+    useState(initTubularSegments + '');
+  const [isTubularSegmentsInvalid, setIsTubularSegmentsInvalid] =
+    useState(false);
+  const [invalidMessageTubularSegments, setInvalidMessageTubularSegments] =
+    useState('');
+
+
+  useEffect(() => {
+    TORUS_BUILDER.setRadius(initRadius).setTube(initTubeRadius)
+        .setRadialSegments(initRadialSegments)
+        .setTubularSegments(initTubularSegments);
+    props.markError(false);
+  }, []);
+
+  useEffect(() => {
+    props.markError(
+        isRadiusInvalid ||
+        isTubeRadiusInvalid ||
+        isRadialSegmentsInvalid ||
+        isTubularSegmentsInvalid,
+    );
+  }, [isRadiusInvalid, isTubeRadiusInvalid, isTubularSegmentsInvalid,
+    isRadialSegmentsInvalid]);
+
+  const handleRadius = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsRadiusInvalid(false);
+    setRadius(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsRadiusInvalid, setInvalidMessageRadius);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        TORUS_BUILDER.setRadius(fValue);
+      } else {
+        setIsRadiusInvalid(true);
+        setInvalidMessageRadius(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleTubeRadius = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTubeRadiusInvalid(false);
+    setTubeRadius(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsTubeRadiusInvalid, setInvalidMessageTubeRadius);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        TORUS_BUILDER.setTube(fValue);
+      } else {
+        setIsTubeRadiusInvalid(true);
+        setInvalidMessageTubeRadius(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleRadialSegments = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsRadialSegmentsInvalid(false);
+    setRadialSegments(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsRadialSegmentsInvalid, setInvalidMessageRadialSegments);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        if (Number.isInteger(fValue)) {
+          TORUS_BUILDER.setRadialSegments(fValue);
+        } else {
+          setIsRadialSegmentsInvalid(true);
+          setInvalidMessageRadialSegments(notIntErrMsg);
+        }
+      } else {
+        setIsRadialSegmentsInvalid(true);
+        setInvalidMessageRadialSegments(gt0ErrMsg);
+      }
+    }
+  };
+
+  const handleTubularSegments =
+  (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTubularSegmentsInvalid(false);
+    setTubularSegments(event.target.value);
+    const fValue = extractValue(event.target.value,
+        setIsTubularSegmentsInvalid, setInvalidMessageTubularSegments);
+
+    if (fValue !== undefined) {
+      if (fValue > 0) {
+        if (Number.isInteger(fValue)) {
+          TORUS_BUILDER.setTubularSegments(fValue);
+        } else {
+          setIsTubularSegmentsInvalid(true);
+          setInvalidMessageTubularSegments(notIntErrMsg);
+        }
+      } else {
+        setIsTubularSegmentsInvalid(true);
+        setInvalidMessageTubularSegments(gt0ErrMsg);
+      }
+    }
+  };
+
+  return (
+    <>
+      <InputElement
+        label={'Torus radius'}
+        value={radius}
+        onChange={handleRadius}
+        isInvalid={isRadiusInvalid}
+        msgIfInvalid={invalidMessageRadius}
+      />
+      <InputElement
+        label={'Tube radius'}
+        value={tubeRadius}
+        onChange={handleTubeRadius}
+        isInvalid={isTubeRadiusInvalid}
+        msgIfInvalid={invalidMessageTubeRadius}
+      />
+      <InputElement
+        label={'Number of radial segments'}
+        value={radialSegments}
+        onChange={handleRadialSegments}
+        isInvalid={isRadialSegmentsInvalid}
+        msgIfInvalid={invalidMessageRadialSegments}
+      />
+      <InputElement
+        label={'Number of tubular segments'}
+        value={tubularSegments}
+        onChange={handleTubularSegments}
+        isInvalid={isTubularSegmentsInvalid}
+        msgIfInvalid={invalidMessageTubularSegments}
+      />
+    </>
+  );
 };

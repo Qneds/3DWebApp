@@ -11,6 +11,7 @@ import ColorModeContext from 'contexts/ColorModeContext';
 import Checkbox, {CheckboxProps} from '@mui/material/Checkbox';
 import {SliderProps, Slider} from '@mui/material';
 import {StandardReactPropsInt} from './Standard';
+import {IoGridSharp} from 'react-icons/io5';
 
 
 export interface GUIButtonPropsWithoutIcon {
@@ -151,6 +152,22 @@ export const ScaleButton =
       />
     );
   };
+
+export const SubdivideButton =
+({text, onClick, active, style, className, buttonRef}
+  : GUIButtonPropsWithoutIcon): JSX.Element => {
+  return (
+    <GUIButton
+      text={text}
+      buttonRef={buttonRef}
+      className={className}
+      style={style}
+      ico={<IoGridSharp/>}
+      onClick={(e) => onClick(e)}
+      active={active}
+    />
+  );
+};
 
 export const InputProperty = (props: InputProps): JSX.Element => {
   const colorModeCtx = useContext(ColorModeContext);

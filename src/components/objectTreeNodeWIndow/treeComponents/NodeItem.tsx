@@ -12,6 +12,9 @@ import TypeIcon from
   'components/objectTreeNodeWIndow/treeComponents/NodeTypeIcon';
 import Object3D from 'WebGL/Objects/Object3D';
 import {BsFillTrashFill} from 'react-icons/bs';
+import STATE from 'WebGL/State';
+import ViewManagerInst from 'WebGL/Views/ViewManager';
+import {Refresher} from 'contexts/RefresherContext';
 
 
 export interface NodeItemProps {
@@ -47,6 +50,7 @@ background-color: ${(props: HoverableProps) => props.isSelected ?
 
 const NodeItem = (props: NodeItemProps): JSX.Element => {
   const colorModeCtx = useContext(ColorModeContext);
+  const refresher = useContext(Refresher);
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     props.onToggle(props.node.id);
@@ -111,8 +115,20 @@ const NodeItem = (props: NodeItemProps): JSX.Element => {
             style={{paddingLeft: '0.2em'}}
           >
             {props.node.text}
-            <BsFillTrashFill/>
           </span>
+          {props.node.parent !== 'root' &&
+          <span
+            style={{marginLeft: '0.2em'}}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (props.node.data) {
+                deleteObj(props.node.data);
+                refresher?.refresh();
+              }
+            }}
+          >
+            <BsFillTrashFill/>
+          </span>}
         </span>
       </Hoverable>
     </span>
@@ -120,3 +136,19 @@ const NodeItem = (props: NodeItemProps): JSX.Element => {
 };
 
 export default NodeItem;
+
+const deleteObj = (obj: Object3D): void => {
+  obj.getChildrenList().forEach((child) => deleteObj(child));
+  const parent = obj.getParent();
+  if (parent) parent.removeChild(obj);
+  obj.setParent(null);
+
+  const selected = STATE.getSelectedObject();
+  if (selected === obj) {
+    STATE.setSelectedObject(null);
+    const mainView = ViewManagerInst.returnView() as any;
+    if (mainView && mainView.recalculateGizmoPosition) {
+      mainView.recalculateGizmoPosition();
+    }
+  }
+};

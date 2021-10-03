@@ -109,10 +109,7 @@ export class Point {
       shader.use();
       WebGLU.bindArrayBuffer(this.vertexBuffer);
       shader.enablePosition();
-      const gl = WebGLU.returnWebGLContext();
-      if (gl) {
-        gl.drawArrays(gl.POINTS, 0, 1);
-      }
+      WebGLU.drawArraysPoint(1);
     }
   }
 
@@ -183,11 +180,7 @@ export class Edge {
       shader.use();
       WebGLU.bindArrayBuffer(this.vertexBuffer);
       shader.enablePosition();
-      const gl = WebGLU.returnWebGLContext();
-      if (gl) {
-        gl.drawArrays(
-            gl.LINES, 0, 2);
-      }
+      WebGLU.drawArraysEdge(2);
     }
   }
 
@@ -230,19 +223,20 @@ export class Edge {
     let distance = vec3.dot(n, diff)/vec3.length(n);
     distance = Math.abs(distance);
 
+
     // d2 -> dirPoint , p2 -> originPoints
-    if (distance < 0.1) {
-      const tmp = vec3.create();
-      const n2 = vec3.create();
-      vec3.cross(n2, dirPoints, n);
-      const distanceOnRay = vec3.dot(
-          vec3.sub(tmp, originPoints, raycaster.getRay().getOrigin()), n2)/
+    const tmp = vec3.create();
+    const n2 = vec3.create();
+    vec3.cross(n2, dirPoints, n);
+    const distanceOnRay = vec3.dot(
+        vec3.sub(tmp, originPoints, raycaster.getRay().getOrigin()), n2)/
         vec3.dot(raycaster.getRay().getDirection(), n2);
-      if (distanceOnRay <= 0) {
-        return null;
-      }
+    if (distanceOnRay <= 0) {
+      return null;
+    }
 
-
+    const areaRange = distanceOnRay * raycaster.getAreaRange() * 0.1;
+    if (distance < areaRange) {
       const pointOnLine = vec3.create();
       const n1 = vec3.create();
 
@@ -259,7 +253,8 @@ export class Edge {
       const P1P2 = vec3.length(vec3.sub(tmp, worldP2, worldP1));
 
       if (P1Cast + CastP2 <= P1P2) {
-        return {edge: this, distance: distanceOnRay};
+        console.log(distance, areaRange);
+        return {edge: this, distance: areaRange};
       }
     }
     return null;
@@ -378,11 +373,7 @@ export class Face {
       shader.use();
       WebGLU.bindArrayBuffer(this.vertexBuffer);
       shader.enablePosition();
-      const gl = WebGLU.returnWebGLContext();
-      if (gl) {
-        gl.drawArrays(
-            gl.TRIANGLES, 0, 3);
-      }
+      WebGLU.drawArraysTriangle(3);
     }
   }
 

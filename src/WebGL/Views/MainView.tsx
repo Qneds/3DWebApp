@@ -243,6 +243,7 @@ export default class MainView extends View implements GizmoManipListener {
   public recalculateGizmoPosition(): void {
     const obj = STATE.getSelectedObject();
     const translated = vec3.create();
+    this.gizmo.inactivate();
     if (obj) {
       mat4.getTranslation(translated, obj.getWorldTransformMatrix());
       vec3.copy(this.gizmoPoint, translated);

@@ -40,7 +40,6 @@ export function MainViewToolsSelector(props: IViewToolSelector): JSX.Element {
       }
     }
     props.updateSelectedTool(tool);
-    console.log(tool);
     if (!isInit) setActActive(t);
     refresher?.refresh();
     return t;

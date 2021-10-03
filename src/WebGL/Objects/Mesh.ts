@@ -276,12 +276,11 @@ export default class Mesh {
   public drawPoints(shader: BasicShader): void {
     if (!this.enabled) return;
 
-    const gl = WebGLU.returnWebGLContext();
-    if (gl && this.verticesBuffer) {
+    if (this.verticesBuffer) {
       shader.use();
       WebGLU.bindArrayBuffer(this.verticesBuffer);
       shader.enablePosition();
-      gl.drawArrays(gl.POINTS, 0, this.points.length);
+      WebGLU.drawArraysPoint(this.points.length);
     }
   }
 
@@ -292,15 +291,13 @@ export default class Mesh {
   public drawEdges(shader: BasicShader): void {
     if (!this.enabled) return;
 
-    const gl = WebGLU.returnWebGLContext();
-    if (gl && this.verticesBuffer && this.indicesBuffer) {
+    if (this.verticesBuffer && this.indicesBuffer) {
       shader.use();
       WebGLU.bindArrayBuffer(this.verticesBuffer);
       shader.enablePosition();
       WebGLU.uploadElementDataToBuffer(this.indicesBuffer, this.indicesEdges);
       WebGLU.bindElementArrayBuffer(this.indicesBuffer);
-      gl.drawElements(gl.LINES, this.indicesEdges.length,
-          gl.UNSIGNED_INT, 0);
+      WebGLU.drawElementsEdge(this.indicesEdges.length);
     }
   }
 
@@ -311,15 +308,13 @@ export default class Mesh {
   public drawFaces(shader: BasicShader): void {
     if (!this.enabled) return;
 
-    const gl = WebGLU.returnWebGLContext();
-    if (gl && this.verticesBuffer && this.indicesBuffer) {
+    if (this.verticesBuffer && this.indicesBuffer) {
       shader.use();
       WebGLU.bindArrayBuffer(this.verticesBuffer);
       shader.enablePosition();
       WebGLU.uploadElementDataToBuffer(this.indicesBuffer, this.indicesFaces);
       WebGLU.bindElementArrayBuffer(this.indicesBuffer);
-      gl.drawElements(gl.TRIANGLES, this.indicesFaces.length,
-          gl.UNSIGNED_INT, 0);
+      WebGLU.drawElementsTriangle(this.indicesFaces.length);
     }
   }
 

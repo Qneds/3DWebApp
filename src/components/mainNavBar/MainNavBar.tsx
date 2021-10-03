@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import {useContext} from 'react';
 import {DropdownItem} from 'reactstrap';
 import Frame from 'utils/Frame';
@@ -20,7 +20,7 @@ const MainNavBar = (): JSX.Element => {
   const refresher = useContext(Refresher);
   const [t, sT] = useState(false);
 
-  const [error, setError] = useState(false);
+  const error = useRef(false);
   const currentBuilderRef =
     useRef<GeometryBuilder | null | undefined>(undefined);
 
@@ -42,12 +42,12 @@ const MainNavBar = (): JSX.Element => {
               header: 'Add Object',
               body: (
                 <AddObjectModal
-                  markError={setError}
+                  markError={(e: boolean) => error.current = e}
                   currentBuilderRef={currentBuilderRef}
                 />
               ),
               onOk: () => {
-                if (!error && currentBuilderRef.current !== undefined) {
+                if (!error.current && currentBuilderRef.current !== undefined) {
                   let parent: Object3D | null= null;
                   const sObj = STATE.getSelectedObject();
                   const world = STATE.getWorld();
@@ -66,7 +66,7 @@ const MainNavBar = (): JSX.Element => {
                     refresher?.refresh();
                   }
                 }
-                return !error;
+                return !error.current;
               },
             });
             modalSystem?.open();

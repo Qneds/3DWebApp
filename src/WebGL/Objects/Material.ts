@@ -131,6 +131,9 @@ class SpecialMaterials {
   private selectedEdgeMat: ObjectMaterial | null = null;
   private selectedPointMat: ObjectMaterial | null = null;
 
+  private editingModeObjectMat: ObjectMaterial | null = null;
+
+
   /**
    * Inits predefined materials
    */
@@ -150,6 +153,12 @@ class SpecialMaterials {
     this.selectedPointMat = new ObjectMaterial();
     this.selectedPointMat.getPointMaterial()
         .setColor([186/255, 105/255, 47/255, 1]);
+
+
+    this.editingModeObjectMat = new ObjectMaterial();
+    this.editingModeObjectMat.getFaceMaterial().setColor([1, 1, 1, 1]);
+    this.editingModeObjectMat.getEdgeMaterial().setColor([0.5, 0.5, 0.5, 1]);
+    this.editingModeObjectMat.getPointMaterial().setColor([0, 0, 0, 1]);
   }
 
   /**
@@ -182,6 +191,14 @@ class SpecialMaterials {
    */
   public getSelectedPointMaterial(): ObjectMaterial | null {
     return this.selectedPointMat;
+  }
+
+  /**
+   * Returns material wto display in edit mode
+   * @return {ObjectMaterial | null}
+   */
+  public getEditModeObjectMaterial(): ObjectMaterial | null {
+    return this.editingModeObjectMat;
   }
 }
 

@@ -257,26 +257,8 @@ export default class Object3D implements Renderable {
       const shaderF = mat.getFaceMaterial().getShader();
       this.setUpShader(shaderF, camera, transform);
       mat.getFaceMaterial().enableMaterial();
-      /* if (gl) {
-        gl.drawElements(
-            gl.TRIANGLES, this.mesh.getIndicesLength(),
-            gl.UNSIGNED_INT, 0);
-      }*/
-      /*
-      this.mesh.getPoints().forEach((p) => {
-        p.drawPoint(shader);
-      });*/
-      /*
-      this.mesh.getEdges().forEach((e) => {
-        e.drawEdge(shader);
-      });*/
-      /*
-      this.mesh.getFaces().forEach((f) => {
-        f.drawFace(shader);
-      });*/
-      // this.mesh.drawPoints(shader);
-      // this.mesh.drawEdges(shader);
       this.mesh.drawFaces(shaderF);
+
       if (drawEdges) {
         const shaderE = mat.getEdgeMaterial().getShader();
         this.setUpShader(shaderE, camera, transform);

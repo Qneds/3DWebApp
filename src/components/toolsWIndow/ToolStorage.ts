@@ -1,4 +1,5 @@
-import {ITool, MoveTool, RotateTool, ScaleTool} from 'WebGL/Editor/Tools/Tools';
+import {ITool, MoveTool, RotateTool, ScaleTool,
+  SurfaceSubdivisionTool} from 'WebGL/Editor/Tools/Tools';
 
 /**
  * Class representing container to store all possible tools
@@ -8,6 +9,7 @@ class ToolStorageClass {
     new MoveTool(),
     new RotateTool(),
     new ScaleTool(),
+    new SurfaceSubdivisionTool(),
   ]
 
 
