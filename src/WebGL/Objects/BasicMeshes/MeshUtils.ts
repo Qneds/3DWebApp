@@ -93,7 +93,9 @@ export class Point {
       vec3.scale(tmp1, dir, distanceFromOriginToHit);
       const distance = vec3.length(vec3.sub(tmp, targetOriginVector, tmp1));
 
-      if (distance < 0.1) {
+      const areaRange = distanceFromOriginToHit *
+        raycaster.getAreaRange() * 0.1;
+      if (distance < areaRange) {
         return {point: this, distance: distanceFromOriginToHit};
       }
     }

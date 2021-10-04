@@ -99,8 +99,10 @@ export default class CameraController implements MouseListener,
   onWheel(event: WheelEvent): void {
     if (this.blockedBy) return;
     if (this.isActive) {
-      this.camera.setRadius(
-          this.camera.getRadius() + event.deltaY * this.zoomScale);
+      const newRadius = this.camera.getRadius() + event.deltaY * this.zoomScale;
+      if (newRadius > 0.1) {
+        this.camera.setRadius(newRadius);
+      }
     }
   }
 
