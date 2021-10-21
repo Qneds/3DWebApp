@@ -175,7 +175,7 @@ export default class Object3D implements Renderable {
   }
 
   /**
-   * Returns object's parent
+   * Returns object's transformation matrix in world space
    * @return {mat4}
    */
   public getWorldTransformMatrix(): mat4 {
@@ -254,10 +254,12 @@ export default class Object3D implements Renderable {
     let mat: ObjectMaterial | null = this.material;
     if (this.isSelected) mat = SPECIAL_MATERIALS.getSelectedObjectMaterial();
     if (this.mesh && mat) {
+      WebGLU.enablePolygonOffset(0.1, 1.0);
       const shaderF = mat.getFaceMaterial().getShader();
       this.setUpShader(shaderF, camera, transform);
       mat.getFaceMaterial().enableMaterial();
       this.mesh.drawFaces(shaderF);
+      WebGLU.disablePolygonOffset();
 
       if (drawEdges) {
         const shaderE = mat.getEdgeMaterial().getShader();

@@ -113,11 +113,12 @@ export default class EditRenderer {
       if (this.selectedFace) {
         const materialF = SPECIAL_MATERIALS.getSelectedFaceMaterial();
         if (materialF) {
-          console.log(materialF.getFaceMaterial().getColor());
+          WebGLU.enablePolygonOffset(0.1, 1.0);
           const shaderF = materialF.getFaceMaterial().getShader();
           setUpShader(shaderF, this.camera, transform);
           materialF.getFaceMaterial().enableMaterial();
           this.selectedFace.drawFace(shaderF);
+          WebGLU.disablePolygonOffset();
         }
       }
 
@@ -127,20 +128,25 @@ export default class EditRenderer {
         material = this.objToRender.getMaterial();
       }
       if (material) {
+        WebGLU.enablePolygonOffset(0.1, 1.0);
         const shaderF = material.getFaceMaterial().getShader();
         setUpShader(shaderF, this.camera, transform);
         material.getFaceMaterial().enableMaterial();
         mesh.drawFaces(shaderF);
+        // mesh.getFaces().forEach((face) => face.drawFace(shaderF));
+        WebGLU.disablePolygonOffset();
 
         const shaderE = material.getEdgeMaterial().getShader();
         setUpShader(shaderE, this.camera, transform);
         material.getEdgeMaterial().enableMaterial();
         mesh.drawEdges(shaderE);
+        // mesh.getEdges().forEach((edge) => edge.drawEdge(shaderE));
 
         const shaderP = material.getPointMaterial().getShader();
         setUpShader(shaderP, this.camera, transform);
         material.getPointMaterial().enableMaterial();
         mesh.drawPoints(shaderP);
+        // mesh.getPoints().forEach((point) => point.drawPoint(shaderP));
       }
     }
   }

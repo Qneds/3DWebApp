@@ -1,7 +1,7 @@
 import EditModeContext from 'contexts/EditModeContext';
 import {mat4, vec2, vec3} from 'gl-matrix';
 import {mode} from 'mathjs';
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Button, ButtonGroup} from 'reactstrap';
 import {GUIButton} from 'utils/GUI/GUIUtils';
 import Camera from 'WebGL/Camera/Camera';
@@ -19,16 +19,20 @@ import {getClosestEdgeOfObj, getClosestFaceOfObj, getClosestPointOfObj}
   from 'WebGL/Raycast/RayCastUtils';
 import EditRenderer from 'WebGL/Renderers/EditRenderer';
 import STATE from 'WebGL/State';
-import {intersection, rotate} from 'WebGL/utils.ts/Math';
+import {calculateCenterPoint, calculateIntersection, rotate,
+} from 'WebGL/utils.ts/Math';
 import View from './View';
 import ViewManagerInst from './ViewManager';
 import {AiOutlineLine} from 'react-icons/ai';
 import {GiPlainSquare} from 'react-icons/gi';
 import {HiOutlineDotsHorizontal} from 'react-icons/hi';
 import {checkIfToolIsGizmoTool, IGizmoTool, MoveTool,
-  RotateTool, ScaleTool} from 'WebGL/Editor/Tools/Tools';
+  RotateTool, ScaleTool, SurfaceSubdivisionTool,
+} from 'WebGL/Editor/Tools/Tools';
 import TOOL_STORAGE from 'components/toolsWIndow/ToolStorage';
 import ToolsManagerInst from 'components/toolsWIndow/ToolsManager';
+import {MoveToolProperties, RotateToolProperties, ScaleToolProperties,
+  TransformToolProperties} from 'WebGL/Editor/Tools/ToolsProperties';
 
 export enum EditViewMode {
   face = 'face',
@@ -59,6 +63,8 @@ export default class EditView extends View implements GizmoManipListener {
   private actualScaleFactor: vec3;
   private originalSelectedEdge: Edge | null = null;
   private originalSelectedFace: Face | null = null;
+
+  private isSelected = false;
 
   /**
    * Creates Main View
@@ -104,6 +110,7 @@ export default class EditView extends View implements GizmoManipListener {
       }
     }
     this.gizmo.setMode(GizmoModes.move);
+    this.updateOriginals();
     vec3.set(this.actualScaleFactor, 1, 1, 1);
     this.gizmo.inactivate();
   }
@@ -113,7 +120,10 @@ export default class EditView extends View implements GizmoManipListener {
    * @param {GizmoModes} m
    */
   public setGizmoMode(m: GizmoModes): void {
+    if (m === GizmoModes.gizmoUnused) this.unselectAll();
     this.gizmo.setMode(m);
+    this.updateOriginals();
+    vec3.set(this.actualScaleFactor, 1, 1, 1);
   }
 
   /**
@@ -137,6 +147,8 @@ export default class EditView extends View implements GizmoManipListener {
     if (this.cameraController.isCameraActive()) return;
     if (this.leftMouseDown) return;
     this.leftMouseDown = true;
+    const ind = mat4.create();
+    mat4.identity(ind);
 
     const screenCords = vec2.fromValues(
         ( event.offsetX / this.camera.getScreenDimensions()[0]) * 2 - 1,
@@ -144,8 +156,19 @@ export default class EditView extends View implements GizmoManipListener {
     );
     const ray = createRayFromCamera(screenCords, this.camera);
     this.raycaster.setRay(ray);
+    this.raycaster.setAreaRange(RayCaster.STANDARD_AREA_RANGE);
+
     if (this.gizmo.raycastGizmo(ray)) return;
-    const h = this.raycaster.cast();
+    if (this.isSelected) return;
+
+    const props = ToolsManagerInst.getSelectedTool()?.getProperties();
+    if (props && props instanceof TransformToolProperties) {
+      this.raycaster.setAreaRange(
+          props.getMouseProperties().getClickRaycastArea());
+    }
+
+    this.isSelected = true;
+    const h = this.raycaster.cast(ind);
 
     this.unselectAll();
     this.gizmo.inactivate();
@@ -169,6 +192,7 @@ export default class EditView extends View implements GizmoManipListener {
           break;
         }
       }
+      this.singleSelect();
     }
   }
 
@@ -177,10 +201,30 @@ export default class EditView extends View implements GizmoManipListener {
    */
   onMouseUp(event: MouseEvent): void {
     this.leftMouseDown = false;
+    this.isSelected = false;
   }
 
   /**
-   * Unselects all faces, edges, pointss
+   * @param {MouseEvent} event
+   */
+  singleSelect(): void {
+    const st = ToolsManagerInst.getSelectedTool();
+    if (!st) return;
+
+    if (this.mode === EditViewMode.face) {
+      if (st instanceof SurfaceSubdivisionTool &&
+          this.selectedFace) {
+        const mesh = this.obj.getMesh();
+        if (mesh) {
+          st.subdivideFace(this.selectedFace, mesh);
+          this.unselectAll();
+        }
+      }
+    }
+  }
+
+  /**
+   * Unselects all faces, edges, points
    */
   private unselectAll(): void {
     this.selectedPoint = null;
@@ -230,6 +274,7 @@ export default class EditView extends View implements GizmoManipListener {
   private handleEdgeHits(edgeH: EdgeHit | null,
       faceH: FaceHit | null, obj: Object3D): void {
     if (edgeH && (!faceH || (faceH && edgeH.distance < faceH.distance))) {
+      console.log(edgeH.distance, faceH ? faceH.distance : 'ss');
       this.selectedEdge = edgeH.edge;
       ToolsManagerInst.getSelectedTool()?.onSelectEdge(this.selectedEdge, obj);
       this.renderer.selectEdge(edgeH.edge);
@@ -245,8 +290,7 @@ export default class EditView extends View implements GizmoManipListener {
       this.gizmo.inactivate();
     }
     this.gizmo.setPoint(this.gizmoPoint);
-    this.originalSelectedEdge =
-      this.selectedEdge ? this.selectedEdge.copy() : null;
+    this.updateOriginals();
   }
 
   /**
@@ -271,8 +315,7 @@ export default class EditView extends View implements GizmoManipListener {
       this.gizmo.inactivate();
     }
     this.gizmo.setPoint(this.gizmoPoint);
-    this.originalSelectedFace =
-      this.selectedFace ? this.selectedFace.copy() : null;
+    this.updateOriginals();
   }
 
   /**
@@ -282,6 +325,7 @@ export default class EditView extends View implements GizmoManipListener {
     WebGLMouseEvent.unsubscribe(this);
     this.gizmo.cleanUp();
     this.cameraController.cleanUp();
+    // this.camera.setCanvasEvent(null);
   }
 
   /**
@@ -295,7 +339,8 @@ export default class EditView extends View implements GizmoManipListener {
     const change = vec3.fromValues(dx, dy, dz);
     const moveTool = TOOL_STORAGE.getToolByType(MoveTool);
     if (moveTool) {
-      vec3.scale(change, change, moveTool.getProperties().getSpeedFactor());
+      const props = moveTool.getProperties() as MoveToolProperties;
+      vec3.scale(change, change, props ? props.getSpeedFactor() : 1);
     }
     vec3.add(
         tmp,
@@ -307,7 +352,9 @@ export default class EditView extends View implements GizmoManipListener {
     switch (this.mode) {
       case EditViewMode.point: {
         if (this.selectedPoint) {
+          console.log('f', this.selectedPoint, tmp);
           this.selectedPoint.setCords(tmp);
+          console.log('a', this.selectedPoint);
           const pA = [this.selectedPoint];
           this.refreshMeshBuffer(pA);
         }
@@ -355,7 +402,8 @@ export default class EditView extends View implements GizmoManipListener {
     const rotateTool = TOOL_STORAGE.getToolByType(RotateTool);
     const c = vec3.fromValues(dx, dy, dz);
     if (rotateTool) {
-      vec3.scale(c, c, rotateTool.getProperties().getSpeedFactor());
+      const props = rotateTool.getProperties() as RotateToolProperties;
+      vec3.scale(c, c, props ? props.getSpeedFactor() : 1);
     }
 
     const rotateMat = rotate(c[0], c[1], c[2]);
@@ -403,7 +451,8 @@ export default class EditView extends View implements GizmoManipListener {
     const change = vec3.fromValues(dx, dy, dz);
     const scaleTool = TOOL_STORAGE.getToolByType(ScaleTool);
     if (scaleTool) {
-      vec3.scale(change, change, scaleTool.getProperties().getSpeedFactor());
+      const props = scaleTool.getProperties() as ScaleToolProperties;
+      vec3.scale(change, change, props ? props.getSpeedFactor() : 1);
     }
 
     const invGP = vec3.create();
@@ -458,6 +507,19 @@ export default class EditView extends View implements GizmoManipListener {
       }
     }
   }
+  /**
+   *
+   */
+  onStart(): void {
+    this.updateOriginals();
+    vec3.set(this.actualScaleFactor, 1, 1, 1);
+  }
+  /**
+   *
+   */
+  onFinish(): void {
+    return;
+  }
 
   /**
    * Updates gizmo's center point
@@ -467,19 +529,8 @@ export default class EditView extends View implements GizmoManipListener {
     if (o instanceof Point) {
       vec3.copy(this.gizmoPoint, o.getCords());
     } else {
-      let x = 0;
-      let y = 0;
-      let z = 0;
-      const points = o.getPoints();
-      points.map((p) => {
-        x += p.getCords()[0];
-        y += p.getCords()[1];
-        z += p.getCords()[2];
-      });
-      x = x/o.getPoints().length;
-      y = y/o.getPoints().length;
-      z = z/o.getPoints().length;
-      this.gizmoPoint = vec3.fromValues(x, y, z);
+      const p = calculateCenterPoint(o.getPoints());
+      vec3.copy(this.gizmoPoint, p.getCords());
     }
   }
 
@@ -493,20 +544,31 @@ export default class EditView extends View implements GizmoManipListener {
       point.recalculateBufferData();
     });
     this.obj.getMesh()?.getEdges().forEach((edge) => {
-      const int = intersection(dependentPoints, edge.getPoints());
+      const int = calculateIntersection(dependentPoints, edge.getPoints());
       if (int.length > 0) {
         edge.recalculateBufferData();
       }
     });
     this.obj.getMesh()?.getFaces().forEach((face) => {
-      const int = intersection(dependentPoints, face.getPoints());
+      const int = calculateIntersection(dependentPoints, face.getPoints());
       if (int.length > 0) {
         face.recalculateBufferData();
       }
     });
     this.obj.getMesh()?.refreshBuffers();
   }
+
+  /**
+   * Updates pretransformed mesh elements
+   */
+  private updateOriginals(): void {
+    this.originalSelectedFace =
+      this.selectedFace ? this.selectedFace.copy() : null;
+    this.originalSelectedEdge =
+      this.selectedEdge ? this.selectedEdge.copy() : null;
+  }
 }
+
 
 const EditOnScreenMenu = (): JSX.Element => {
   const workingEditMode = useContext(EditModeContext);
@@ -517,6 +579,10 @@ const EditOnScreenMenu = (): JSX.Element => {
         .setMode(mode);
     // setWorkingMode(mode);
   };
+
+  useEffect(() => {
+    workingEditMode?.setEditMode(EditViewMode.point);
+  }, []);
 
   return (
     <>

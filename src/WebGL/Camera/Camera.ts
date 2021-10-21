@@ -1,6 +1,6 @@
 import {vec3, mat4} from 'gl-matrix';
 import {CanvasEvent, CanvasListener} from 'WebGL/Listeners/CanvasEvent';
-import {toRadians} from 'WebGL/utils.ts/Math';
+import {normalizeAngle, toRadians} from 'WebGL/utils.ts/Math';
 import WebGLU from 'WebGL/WebGlUtils';
 /**
  * Standard camera class
@@ -12,8 +12,10 @@ export default class Camera implements CanvasListener {
   private position: vec3;
   private pointToLook: vec3;
   private lookAtMatrix: mat4;
+  private invertedLookAtMatrix: mat4;
   private projectionMatrix: mat4;
   private fov: number;
+  private isCameraUpSideDown = false;
 
   private screenWidth = 0;
   private screenHeight = 0;
@@ -36,6 +38,7 @@ export default class Camera implements CanvasListener {
     this.distanceToLookingPoint = distanceToLookingPoint;
     this.pointToLook = pointToLook;
     this.position = this.updatePosition();
+    this.invertedLookAtMatrix = mat4.create();
     this.lookAtMatrix = this.calcLookAt();
     this.fov = fov;
     this.projectionMatrix = mat4.create();
@@ -85,6 +88,7 @@ export default class Camera implements CanvasListener {
       this.distanceToLookingPoint *
         Math.sin(this.azAngle) * Math.cos(this.elAngle),
     ];
+    vec3.add(this.position, this.position, this.pointToLook);
     return this.position;
   }
 
@@ -101,12 +105,16 @@ export default class Camera implements CanvasListener {
    */
   private calcLookAt(): mat4 {
     const vecUp: vec3 = [0, 1, 0];
+    this.isCameraUpSideDown = false;
     if ((this.elAngle > Math.PI/2) || (this.elAngle <= -(Math.PI/2))) {
       vecUp[1] = -1;
+      this.isCameraUpSideDown = true;
     }
     this.lookAtMatrix = mat4.create();
-    return this.lookAtMatrix = mat4.lookAt(this.lookAtMatrix,
+    this.lookAtMatrix = mat4.lookAt(this.lookAtMatrix,
         this.position, this.pointToLook, vecUp);
+    mat4.invert(this.invertedLookAtMatrix, this.lookAtMatrix);
+    return this.lookAtMatrix;
   }
   /**
    * @return {mat4}
@@ -118,6 +126,15 @@ export default class Camera implements CanvasListener {
   }
 
   /**
+   * @return {mat4}
+   */
+  public getCameraToWorldMatrix(): mat4 {
+    const out = mat4.create();
+    mat4.copy(out, this.invertedLookAtMatrix);
+    return out;
+  }
+
+  /**
    * Returns projection matrix
    * @return {mat4}
    */
@@ -125,6 +142,14 @@ export default class Camera implements CanvasListener {
     const out = mat4.create();
     mat4.copy(out, this.projectionMatrix);
     return out;
+  }
+
+  /**
+   * Checks if camera is upside down
+   * @return {boolean}
+   */
+  public checkIfCameraUpSideDown(): boolean {
+    return this.isCameraUpSideDown;
   }
 
   /**
@@ -158,7 +183,7 @@ export default class Camera implements CanvasListener {
    * @param {number} angle
    */
   public setAzimutAngle(angle: number): void {
-    this.azAngle = angle;
+    this.azAngle = normalizeAngle(angle);
     this.updatePosition();
     this.calcLookAt();
   }
@@ -176,7 +201,7 @@ export default class Camera implements CanvasListener {
    * @param {number} angle
    */
   public setElevationAngle(angle: number): void {
-    this.elAngle = angle;
+    this.elAngle = normalizeAngle(angle);
     this.updatePosition();
     this.calcLookAt();
   }
@@ -188,6 +213,27 @@ export default class Camera implements CanvasListener {
   public getPosition(): vec3 {
     const out = vec3.create();
     vec3.copy(out, this.position);
+    return out;
+  }
+
+  /**
+   * Sets new position.
+   * @param {vec3} point
+   * @return {void}
+   */
+  public setPointToLookAt(point: vec3): void {
+    vec3.copy(this.pointToLook, point);
+    this.updatePosition();
+    this.calcLookAt();
+  }
+
+  /**
+   * Returns position on which camera is looking
+   * @return {vec3}
+   */
+  public getPointToLookAt(): vec3 {
+    const out = vec3.create();
+    vec3.copy(out, this.pointToLook);
     return out;
   }
 

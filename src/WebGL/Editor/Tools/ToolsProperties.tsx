@@ -8,11 +8,26 @@ export interface IPropertiesCard {
 }
 
 /**
+ * Tool properties class
+ */
+export abstract class ToolProperties implements IPropertiesCard {
+  /**
+   * @return {JSX.Element}
+   */
+  drawPropertiesCard(): JSX.Element {
+    return (
+      <>
+      </>
+    );
+  }
+}
+
+/**
  * General transform tools properties class
  */
-export class MouseProperties implements IPropertiesCard {
+export class MouseProperties extends ToolProperties {
   private readonly startingVal = 0.1;
-  private readonly minVal = 0.001;
+  private readonly minVal = 0.01;
   private readonly maxVal = 10;
   private clickRaycastArea: number;
 
@@ -20,6 +35,7 @@ export class MouseProperties implements IPropertiesCard {
    *
    */
   constructor() {
+    super();
     this.clickRaycastArea = this.startingVal;
   }
 
@@ -71,11 +87,11 @@ export class MouseProperties implements IPropertiesCard {
 /**
  * General transform tools properties class
  */
-export class TransformToolProperties implements IPropertiesCard {
+export class TransformToolProperties extends ToolProperties {
   private mouseProperties = MousePropertiesInst;
 
   private readonly startingVal = 1;
-  private readonly minVal = 0.001;
+  private readonly minVal = 0.01;
   private readonly maxVal = 10;
   private speedFactor: number;
 
@@ -88,9 +104,18 @@ export class TransformToolProperties implements IPropertiesCard {
    */
   constructor(cardLabel = 'Transforms Properties',
       speedFactorLabel = 'change factor' ) {
+    super();
     this.speedFactor = this.startingVal;
     this.cardLabel = cardLabel;
     this.speedFactorLabel = speedFactorLabel;
+  }
+
+  /**
+   * Returns mouse properties
+   * @return {MouseProperties}
+   */
+  getMouseProperties(): MouseProperties {
+    return this.mouseProperties;
   }
 
   /**

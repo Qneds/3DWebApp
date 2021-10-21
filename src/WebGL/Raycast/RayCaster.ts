@@ -22,6 +22,7 @@ export default class RayCaster {
   private mode: RayCasterMode;
   private recursion: boolean;
   private areaRange: number;
+  public static readonly STANDARD_AREA_RANGE = 0.1;
 
   /**
    * Creates new RayCaster
@@ -44,12 +45,14 @@ export default class RayCaster {
 
   /**
    * Cast set ray
+   * @param {mat4} initMatrix
    * @return {ObjectRaycastHit[] | null}
    */
-  public cast(): ObjectRaycastHit[] | null {
+  public cast(initMatrix?: mat4 | undefined): ObjectRaycastHit[] | null {
     if (this.obj instanceof Object3D) {
       const t = mat4.create();
-      mat4.identity(t);
+      if (initMatrix !== undefined) mat4.copy(t, initMatrix);
+      else mat4.copy(t, this.obj.getTransform().getTransformationMatrix());
       const hits = this.castObject3D(this.obj, t);
       return hits.filter((h): h is ObjectRaycastHit => h !== null);
     } else {
@@ -191,10 +194,11 @@ export function createRayFromCamera(screenCords: vec2, camera: Camera): Ray {
   // const direction = vec3.fromValues(screenCords[0], screenCords[1], 0.5);
   const direction4 = vec4.fromValues(screenCords[0], screenCords[1], 1, 1);
   vec4.transformMat4(direction4, direction4, camera.getUnProjectMatrix());
+  const w = direction4[3] ? direction4[3] : 1;
   const direction = vec3.fromValues(
-      direction4[0]/direction4[3],
-      direction4[1]/direction4[3],
-      direction4[2]/direction4[3]);
+      direction4[0]/w,
+      direction4[1]/w,
+      direction4[2]/w);
 
   vec3.sub(direction, direction, origin);
   vec3.normalize(direction, direction);

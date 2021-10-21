@@ -4,7 +4,7 @@ import {DropdownItem} from 'reactstrap';
 import Frame from 'utils/Frame';
 import ColorModeContext from 'contexts/ColorModeContext';
 import {GUIDropdown} from 'utils/GUI/GUIUtils';
-import {MdArrowUpward, MdArrowDownward, MdDehaze} from 'react-icons/md';
+import {MdArrowDownward, MdDehaze} from 'react-icons/md';
 import ViewManagerInst from 'WebGL/Views/ViewManager';
 import ModalSystemContext from 'contexts/ModalSystemContext';
 import AddObjectModal from './addObjects/AddObjectModal';
@@ -13,16 +13,23 @@ import STATE from 'WebGL/State';
 import Object3D from 'WebGL/Objects/Object3D';
 import Mesh from 'WebGL/Objects/Mesh';
 import {Refresher} from 'contexts/RefresherContext';
+import ImportObjButton from './import/ImportObj';
+import ExportObjDropdown from './export/ExportObjDropdown';
+
+export interface ExportObjItemProps {
+  toggleMenu: () => void;
+}
 
 const MainNavBar = (): JSX.Element => {
   const color = useContext(ColorModeContext);
   const modalSystem = useContext(ModalSystemContext);
   const refresher = useContext(Refresher);
-  const [t, sT] = useState(false);
 
   const error = useRef(false);
   const currentBuilderRef =
     useRef<GeometryBuilder | null | undefined>(undefined);
+
+  const [exportChildren, setExportChildren] = useState(false);
 
   return (
     <Frame
@@ -32,9 +39,6 @@ const MainNavBar = (): JSX.Element => {
       <GUIDropdown
         text={'Menu'}
         ico={<MdDehaze/>}
-        onClick={() => {
-          sT(!t);
-        }}
       >
         <DropdownItem
           onClick={() => {
@@ -75,21 +79,14 @@ const MainNavBar = (): JSX.Element => {
           Add Object
         </DropdownItem>
       </GUIDropdown>
-      <GUIDropdown
-        text={'Import'}
-        ico={<MdArrowUpward/>}
-        onClick={() => {
-          '';
-        }}>
-        <DropdownItem>Import</DropdownItem>
-      </GUIDropdown>
+      <ImportObjButton/>
       <GUIDropdown
         text={'Export'}
         ico={<MdArrowDownward/>}
-        onClick={() => {
-          '';
-        }}>
-        <DropdownItem>Export</DropdownItem>
+      >
+        <ExportObjDropdown
+          exportChildren={exportChildren}
+          changeExportChildren={setExportChildren}/>
       </GUIDropdown>
     </Frame>
   );

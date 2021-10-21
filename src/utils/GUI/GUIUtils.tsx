@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
 import {useState} from 'react';
 import {Button, ButtonDropdown,
   DropdownToggle, DropdownMenu, InputProps, Input} from 'reactstrap';
@@ -16,7 +16,7 @@ import {IoGridSharp} from 'react-icons/io5';
 
 export interface GUIButtonPropsWithoutIcon {
   text?: string;
-  onClick: React.MouseEventHandler<HTMLElement>;
+  onClick?: React.MouseEventHandler<HTMLElement>;
   active?: boolean;
   style?: React.CSSProperties;
   className?: string;
@@ -27,6 +27,8 @@ export interface GUIButtonProps extends GUIButtonPropsWithoutIcon {
 }
 
 export interface GUIDropdownProps extends GUIButtonProps {
+    isOpen?: boolean;
+    toggle?: (() => void) | undefined;
     children: React.ReactChild[] | React.ReactChild
 }
 
@@ -39,13 +41,21 @@ export interface DisableProps extends StandardReactPropsInt {
 }
 
 export const GUIButton = (props : GUIButtonProps): JSX.Element=> {
+  const buttonRef = useRef(null);
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    if (props.active === undefined) {
+      setIsActive(false);
+    }
+  }, [isActive]);
   return (
     <Button
       className={`btn-gui ${props.className ? props.className : ''}`}
       onClick={props.onClick}
-      innerRef={props.buttonRef}
+      innerRef={props.buttonRef ? props.buttonRef : buttonRef}
       style={props.style}
-      active={props.active ? props.active : false}>
+      active={props.active !== undefined ? props.active : isActive}>
       <span
         style={{
           marginRight: props.text ? '10px' : '0px',
@@ -73,8 +83,14 @@ export const GUIDropdown = (props: GUIDropdownProps): JSX.Element => {
 
   return (
     <ButtonDropdown
-      isOpen={dropdownOpen}
-      toggle={toggle}
+      isOpen={props.isOpen === undefined ? dropdownOpen : props.isOpen}
+      toggle={() => {
+        if (props.toggle === undefined) {
+          toggle();
+        } else {
+          props.toggle();
+        }
+      }}
       innerRef={props.buttonRef}
       onClick={props.onClick}
       className="btn-gui">
@@ -113,7 +129,7 @@ export const MoveButton =
         className={className}
         style={style}
         ico={<BsArrowsMove/>}
-        onClick={(e) => onClick(e)}
+        onClick={onClick}
         active={active}
       />
     );
@@ -130,7 +146,7 @@ export const RotateButton =
         className={className}
         style={style}
         ico={<ImLoop2/>}
-        onClick={(e) => onClick(e)}
+        onClick={onClick}
         active={active}
       />
     );
@@ -147,7 +163,7 @@ export const ScaleButton =
         className={className}
         style={style}
         ico={<CgArrowsExpandLeft/>}
-        onClick={(e) => onClick(e)}
+        onClick={onClick}
         active={active}
       />
     );
@@ -163,7 +179,7 @@ export const SubdivideButton =
       className={className}
       style={style}
       ico={<IoGridSharp/>}
-      onClick={(e) => onClick(e)}
+      onClick={onClick}
       active={active}
     />
   );

@@ -123,7 +123,6 @@ const MaterialProps = (): JSX.Element=> {
     });
   };
 
-  console.log(chosenColor);
   return (<CardBody>
     <Property label='albedo'>
       <span

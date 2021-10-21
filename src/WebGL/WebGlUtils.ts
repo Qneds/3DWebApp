@@ -92,6 +92,26 @@ export class WebGLUtils {
   }
 
   /**
+   * Enables polygon offset in depth buffer end sets its values
+   * @param {number} factor
+   * @param {number} units
+   */
+  enablePolygonOffset(factor: number, units: number): void {
+    if (!this.gl) return;
+    this.gl.enable(this.gl.POLYGON_OFFSET_FILL);
+    this.gl.polygonOffset(factor, units);
+  }
+
+  /**
+   * Disables polygon offset
+   * @return {void}
+   */
+  disablePolygonOffset(): void {
+    if (!this.gl) return;
+    this.gl.disable(this.gl.POLYGON_OFFSET_FILL);
+  }
+
+  /**
    * Assigns new Data to binded buffer
    * @param {Iterable<number>} data
    */

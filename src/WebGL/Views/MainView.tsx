@@ -8,6 +8,8 @@ import CameraController from 'WebGL/Camera/CameraController';
 import GizmoManager, {GizmoModes} from 'WebGL/Editor/Gizmos/GizmoManager';
 import {GizmoManipListener} from 'WebGL/Editor/Gizmos/GizmoManipEvent';
 import {MoveTool, RotateTool, ScaleTool} from 'WebGL/Editor/Tools/Tools';
+import {MoveToolProperties, RotateToolProperties, ScaleToolProperties}
+  from 'WebGL/Editor/Tools/ToolsProperties';
 import {CanvasEvent} from 'WebGL/Listeners/CanvasEvent';
 import WebGLMouseEvent, {MouseListener} from 'WebGL/Listeners/MouseEvent';
 import {FaceHit} from 'WebGL/Objects/BasicMeshes/MeshUtils';
@@ -17,7 +19,8 @@ import RayCaster, {createRayFromCamera, Ray, RayCasterMode}
 import {getClosestFaceOfObj, getClosestObj} from 'WebGL/Raycast/RayCastUtils';
 import StandardRenderer from 'WebGL/Renderers/StandardRenderer';
 import STATE from 'WebGL/State';
-import {quatToEuler, rotate} from 'WebGL/utils.ts/Math';
+import {changeSign, extractOrientationMatrix, quatToEuler,
+  rotate} from 'WebGL/utils.ts/Math';
 import View from './View';
 
 /**
@@ -35,6 +38,8 @@ export default class MainView extends View implements GizmoManipListener {
   private gizmoPoint: vec3;
 
   private leftMouseDown = false;
+
+  private actualObjectWorldTransformation = mat4.create();
 
   /**
    * Creates Main View
@@ -110,7 +115,25 @@ export default class MainView extends View implements GizmoManipListener {
       vec3.copy(this.gizmoPoint, newP);
       this.gizmo.setPoint(newP);
       this.gizmo.activate();
+      mat4.copy(this.actualObjectWorldTransformation,
+          s[0]?.hittedObject.getWorldTransformMatrix());
     }
+  }
+  /**
+   *
+   */
+  onStart(): void {
+    const obj = STATE.getSelectedObject();
+    if (obj) {
+      mat4.copy(this.actualObjectWorldTransformation,
+          obj.getWorldTransformMatrix());
+    }
+  }
+  /**
+   *
+   */
+  onFinish(): void {
+    return;
   }
 
   /**
@@ -131,20 +154,27 @@ export default class MainView extends View implements GizmoManipListener {
     const moveTool = TOOL_STORAGE.getToolByType(MoveTool);
     if (!transform) return;
 
+    const change = vec3.fromValues(dx, dy, dz);
+    let props: MoveToolProperties | null = null;
+    if (moveTool) {
+      props = moveTool.getProperties() as MoveToolProperties;
+      vec3.scale(change, change,
+          props ? props.getSpeedFactor() : 1);
+    }
+
     const tmp = vec4.create();
+    const vec4T = vec4.fromValues(change[0], change[1], change[2], 0);
     if (parent) {
       const inv = mat4.create();
       mat4.invert(inv, parent.getWorldTransformMatrix());
-      vec4.transformMat4(tmp, [dx, dy, dz, 0], inv);
+      vec4.transformMat4(tmp, vec4T, inv);
     } else {
-      vec4.copy(tmp, [dx, dy, dz, 0]);
+      vec4.copy(tmp, vec4T);
     }
+    const w = tmp[3] ? tmp[3] : 1;
+    const translatedTranslation = vec3.fromValues(tmp[0]/w, tmp[1]/w, tmp[2]/w);
 
-    const translatedTranslation = vec3.fromValues(tmp[0], tmp[1], tmp[2]);
-    if (moveTool) {
-      vec3.scale(translatedTranslation, translatedTranslation,
-          moveTool.getProperties().getSpeedFactor());
-    }
+
     const final = vec3.create();
 
     const prevTranslation = transform.getPositionInParent();
@@ -152,7 +182,7 @@ export default class MainView extends View implements GizmoManipListener {
         vec3.add(final, prevTranslation, translatedTranslation));
     const diff = vec3.fromValues(dx, dy, dz);
     if (moveTool) {
-      vec3.scale(diff, diff, moveTool.getProperties().getSpeedFactor());
+      vec3.scale(diff, diff, props ? props.getSpeedFactor() : 1);
     }
     vec3.add(this.gizmoPoint, this.gizmoPoint, diff);
     this.gizmo.setPoint(this.gizmoPoint);
@@ -165,8 +195,10 @@ export default class MainView extends View implements GizmoManipListener {
    * @param {number} dz
    */
   onRotate(dx: number, dy: number, dz: number): void {
-    const transform = STATE.getSelectedObject()?.getTransform();
-    const parent = STATE.getSelectedObject()?.getParent();
+    /*
+    const obj = STATE.getSelectedObject();
+    const transform = obj?.getTransform();
+    const parent = obj?.getParent();
     if (!transform) return;
     const rotateTool = TOOL_STORAGE.getToolByType(RotateTool);
     const c = vec3.fromValues(dx, dy, dz);
@@ -176,14 +208,14 @@ export default class MainView extends View implements GizmoManipListener {
 
     const tmp = rotate(c[0], c[1], c[2]);
     const rotated = mat4.create();
-    if (parent) {
-      const inv = mat4.create();
-      mat4.invert(inv, parent.getWorldTransformMatrix());
+    if (obj) {
+      const inv =
+        extractOrientationMatrix(this.actualObjectWorldTransformation);
+      mat4.invert(inv, inv);
       mat4.multiply(rotated, inv, tmp);
     } else {
       mat4.copy(rotated, tmp);
     }
-
     const tmpQuat = quat.create();
     mat4.getRotation(tmpQuat, rotated);
     const rotatedRotation = quatToEuler(tmpQuat);
@@ -194,6 +226,85 @@ export default class MainView extends View implements GizmoManipListener {
         vec3.add(final, prevRotation, rotatedRotation));
 
     GLOBAL_COMPONENTS_REFRESH_EVENT.refresh();
+    */
+
+
+    const obj = STATE.getSelectedObject();
+    const transform = obj?.getTransform();
+    const parent = obj?.getParent();
+    if (!transform) return;
+    const rotateTool = TOOL_STORAGE.getToolByType(RotateTool);
+    const c = vec3.fromValues(dx, dy, dz);
+    if (rotateTool) {
+      const props = rotateTool.getProperties() as RotateToolProperties;
+      vec3.scale(c, c, props ? props.getSpeedFactor() : 1);
+    }
+    /*
+    const tmp = vec4.fromValues(c[0], c[1], c[2], 0);
+    const rotated = vec4.create();
+    const inv = mat4.create();
+    if (obj) {
+      mat4.copy(inv,
+          extractOrientationMatrix(this.actualObjectWorldTransformation));
+      mat4.invert(inv, inv);
+    } else {
+      mat4.identity(inv);
+    }
+
+    vec4.transformMat4(rotated, tmp, inv);
+    const allSumD = dx + dy + dz;
+
+    const rotatedVec3 = vec3.fromValues(rotated[0], rotated[1], rotated[2]);
+    */
+    const final = vec3.create();
+    const prevRotation = transform.getOrientationInParent();
+    transform.setOrientationInParent(
+        vec3.add(final, prevRotation, /* rotatedVec3 */ c));
+
+    GLOBAL_COMPONENTS_REFRESH_EVENT.refresh();
+
+    /*
+    const obj = STATE.getSelectedObject();
+    const transform = obj?.getTransform();
+    const parent = obj?.getParent();
+    if (!transform) return;
+    const rotateTool = TOOL_STORAGE.getToolByType(RotateTool);
+    const c = vec3.fromValues(dx, dy, dz);
+    if (rotateTool) {
+      vec3.scale(c, c, rotateTool.getProperties().getSpeedFactor());
+    }
+
+    const tmp = vec4.fromValues(c[0], c[1], c[2], 0);
+    const rotated = vec4.create();
+    const inv = mat4.create();
+    if (parent) {
+      // mat4.copy(inv,
+      //     this.actualObjectWorldTransformation);
+      mat4.copy(inv,
+          this.actualObjectWorldTransformation);
+      mat4.invert(inv, inv);
+    } else {
+      mat4.identity(inv);
+    }
+
+    vec4.transformMat4(rotated, tmp, inv);
+    const final = vec3.create();
+
+    const transformedVec3 = vec3.fromValues(rotated[0], rotated[1], rotated[2]);
+    vec3.normalize(transformedVec3, transformedVec3);
+    const rotationChangeMat = mat4.create();
+    mat4.fromRotation(rotationChangeMat, dx + dy + dz,
+      changeSign(transformedVec3 as number[], 1) as vec3);
+    const rotationChangeQuat = quat.create();
+    mat4.getRotation(rotationChangeQuat, rotationChangeMat);
+    const rotationAngles = quatToEuler(rotationChangeQuat);
+
+    const prevRotation = transform.getOrientationInParent();
+    transform.setOrientationInParent(
+        vec3.add(final, prevRotation, rotationAngles));
+
+    GLOBAL_COMPONENTS_REFRESH_EVENT.refresh();
+    */
   }
   /**
    * @param {number} dx
@@ -201,25 +312,36 @@ export default class MainView extends View implements GizmoManipListener {
    * @param {number} dz
    */
   onScale(dx: number, dy: number, dz: number): void {
-    const transform = STATE.getSelectedObject()?.getTransform();
-    const parent = STATE.getSelectedObject()?.getParent();
+    const obj = STATE.getSelectedObject();
+    const transform = obj?.getTransform();
+    const parent = obj?.getParent();
     if (!transform) return;
     const change = vec3.fromValues(dx, dy, dz);
     const scaleTool = TOOL_STORAGE.getToolByType(ScaleTool);
     if (scaleTool) {
-      vec3.scale(change, change, scaleTool.getProperties().getSpeedFactor());
+      const props = scaleTool.getProperties() as ScaleToolProperties;
+      vec3.scale(change, change, props ? props.getSpeedFactor() : 1);
     }
 
     const tmp = vec4.create();
     if (parent) {
       const inv = mat4.create();
-      mat4.invert(inv, parent.getWorldTransformMatrix());
+      const rotTransMat = mat4.create();
+      const rot = quat.create();
+      const trans = vec3.create();
+      mat4.getRotation(rot, this.actualObjectWorldTransformation);
+      mat4.getTranslation(trans, this.actualObjectWorldTransformation);
+      mat4.fromRotationTranslation(rotTransMat, rot, trans);
+
+      mat4.invert(inv, rotTransMat);
       vec4.transformMat4(tmp, [dx, dy, dz, 0], inv);
     } else {
       vec4.copy(tmp, [dx, dy, dz, 0]);
     }
-
-    const scaledScaling = vec3.fromValues(tmp[0], tmp[1], tmp[2]);
+    const w = tmp[3] ? tmp[3] : 1;
+    const scaledScaling = vec3.fromValues(tmp[0]/w, tmp[1]/w, tmp[2]/w);
+    changeSign(scaledScaling as number[], dx + dy + dz);
+    console.log(scaledScaling, [dx, dy, dz], [tmp[0], tmp[1], tmp[2]]);
     const final = vec3.create();
 
     const prevScale = transform.getScaleInParent();
@@ -235,6 +357,7 @@ export default class MainView extends View implements GizmoManipListener {
     WebGLMouseEvent.unsubscribe(this);
     this.gizmo.cleanUp();
     this.cameraController.cleanUp();
+    // this.camera.setCanvasEvent(null);
   }
 
   /**

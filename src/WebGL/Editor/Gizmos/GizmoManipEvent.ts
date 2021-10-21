@@ -4,6 +4,8 @@ export interface GizmoManipListener {
   onMove(dx: number, dy: number, dz: number): void;
   onRotate(dx: number, dy: number, dz: number): void;
   onScale(dx: number, dy: number, dz: number): void;
+  onStart(): void;
+  onFinish(): void;
 }
 
 /**
@@ -38,6 +40,22 @@ export class GizmoManipEvent extends WebGLEvent<GizmoManipListener> {
   public onScale(dx: number, dy: number, dz: number) : void {
     this.getListeners().forEach((el) => {
       el.onScale(dx, dy, dz);
+    });
+  }
+  /**
+   *
+   */
+  public onStart() : void {
+    this.getListeners().forEach((el) => {
+      el.onStart();
+    });
+  }
+  /**
+   *
+   */
+  public onFinish() : void {
+    this.getListeners().forEach((el) => {
+      el.onFinish();
     });
   }
 }

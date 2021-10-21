@@ -24,9 +24,9 @@ export class GizmoMove {
   constructor() {
     this.main = new Object3D();
 
-    this.gizmoX = buildMoveGizmoDir(10, 1, 5, 2, 12, [1, 0, 0, 1]);
-    this.gizmoY = buildMoveGizmoDir(10, 1, 5, 2, 12, [0, 1, 0, 1]);
-    this.gizmoZ = buildMoveGizmoDir(10, 1, 5, 2, 12, [0, 0, 1, 1]);
+    this.gizmoX = buildMoveGizmoDir(2.5, 0.25, 1.25, 0.5, 12, [1, 0, 0, 1]);
+    this.gizmoY = buildMoveGizmoDir(2.5, 0.25, 1.25, 0.5, 12, [0, 1, 0, 1]);
+    this.gizmoZ = buildMoveGizmoDir(2.5, 0.25, 1.25, 0.5, 12, [0, 0, 1, 1]);
 
     let t = new Transform();
     t.setOrientationInParent([0, 0, toRadians(-90)]);
@@ -93,9 +93,9 @@ export class GizmoRotate {
   constructor() {
     this.main = new Object3D();
 
-    this.gizmoX = buildRotateGizmoDir(10, 0.5, 26, 5, [1, 0, 0, 1]);
-    this.gizmoY = buildRotateGizmoDir(10, 0.5, 26, 5, [0, 1, 0, 1]);
-    this.gizmoZ = buildRotateGizmoDir(10, 0.5, 26, 5, [0, 0, 1, 1]);
+    this.gizmoX = buildRotateGizmoDir(5, 0.25, 26, 5, [1, 0, 0, 1]);
+    this.gizmoY = buildRotateGizmoDir(5, 0.25, 26, 5, [0, 1, 0, 1]);
+    this.gizmoZ = buildRotateGizmoDir(5, 0.25, 26, 5, [0, 0, 1, 1]);
 
     let t = new Transform();
     t.setOrientationInParent([0, toRadians(-90), 0]);
@@ -161,9 +161,9 @@ export class GizmoScale {
   constructor() {
     this.main = new Object3D();
 
-    this.gizmoX = buildScaleGizmoDir(10, 1, 2, 12, [1, 0, 0, 1]);
-    this.gizmoY = buildScaleGizmoDir(10, 1, 2, 12, [0, 1, 0, 1]);
-    this.gizmoZ = buildScaleGizmoDir(10, 1, 2, 12, [0, 0, 1, 1]);
+    this.gizmoX = buildScaleGizmoDir(2.5, 0.25, 0.5, 12, [1, 0, 0, 1]);
+    this.gizmoY = buildScaleGizmoDir(2.5, 0.25, 0.5, 12, [0, 1, 0, 1]);
+    this.gizmoZ = buildScaleGizmoDir(2.5, 0.25, 0.5, 12, [0, 0, 1, 1]);
 
     let t = new Transform();
     t.setOrientationInParent([0, 0, toRadians(-90)]);

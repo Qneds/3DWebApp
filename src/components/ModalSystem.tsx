@@ -1,6 +1,7 @@
 import ModalSystemContext from 'contexts/ModalSystemContext';
 import React, {useState} from 'react';
-import {Modal, ModalHeader, ModalBody, ModalFooter, Button} from 'reactstrap';
+import {Modal, ModalHeader, ModalBody, ModalFooter, Button,
+  ModalProps} from 'reactstrap';
 import {StandardReactPropsInt} from 'utils/GUI/Standard';
 
 export interface ModalDataInt {
@@ -12,6 +13,7 @@ export interface ModalDataInt {
     boolean) | undefined;
   onClose?: ((event: React.MouseEvent<Element, MouseEvent>) =>
     boolean) | undefined;
+  modalSettings?: ModalProps | undefined;
 }
 
 const ModalSystem = (props: StandardReactPropsInt): JSX.Element => {
@@ -24,10 +26,13 @@ const ModalSystem = (props: StandardReactPropsInt): JSX.Element => {
       isOpen: isOpen,
     }}>
       <Modal
+        {...(modalData && modalData.modalSettings ?
+          modalData.modalSettings : {})}
         isOpen={isOpen}
         toggle={() => setIsOpen(!isOpen)}
         className={props.className}
         style={props.style}
+        returnFocusAfterClose={false}
       >
         <ModalHeader toggle={(e) => {
           let close = true;

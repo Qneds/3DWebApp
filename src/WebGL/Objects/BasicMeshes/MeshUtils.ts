@@ -51,7 +51,7 @@ export class Point {
    * @return {void}
    */
   public setCords(c: vec3): void {
-    this.point = c;
+    this.point = vec3.copy(this.point, c);
   }
 
   /**
@@ -254,9 +254,8 @@ export class Edge {
       const CastP2 = vec3.length(vec3.sub(tmp, worldP2, pointOnLine));
       const P1P2 = vec3.length(vec3.sub(tmp, worldP2, worldP1));
 
-      if (P1Cast + CastP2 <= P1P2) {
-        console.log(distance, areaRange);
-        return {edge: this, distance: areaRange};
+      if (P1Cast + CastP2 <= P1P2 + 0.1) {
+        return {edge: this, distance: distanceOnRay};
       }
     }
     return null;
@@ -308,35 +307,55 @@ export class Face {
    */
   private generateVertexesArray(): number[] {
     const pointsInEdges: Array<Point> = [];
-    this.edges.forEach((edge) => {
-      const [p1, p2] = edge.getPoints();
-      let findP1 = pointsInEdges.find((p) => p === p1);
-      let findP2 = pointsInEdges.find((p) => p === p2);
-      if (!findP1) {
-        findP1 = p1;
-      }
-      if (!findP2) {
-        findP2 = p2;
-      }
-      if (pointsInEdges.length === 0) {
-        pointsInEdges.push(findP1);
-        pointsInEdges.push(findP2);
-        return;
-      }
-      if (findP1 === pointsInEdges[0] &&
-          findP2 !== pointsInEdges[pointsInEdges.length - 1]) {
-        pointsInEdges.unshift(findP2);
-      } else if (findP1 === pointsInEdges[pointsInEdges.length - 1] &&
-          findP2 !== pointsInEdges[0]) {
-        pointsInEdges.push(findP2);
-      } else if (findP2 === pointsInEdges[0] &&
-          findP1 !== pointsInEdges[pointsInEdges.length - 1]) {
-        pointsInEdges.unshift(findP1);
-      } else if (findP2 === pointsInEdges[pointsInEdges.length - 1] &&
-          findP1 !== pointsInEdges[0]) {
-        pointsInEdges.push(findP1);
-      }
-    });
+    const processedInfoArr: boolean[] =
+        new Array(this.edges.length).fill(false);
+    let prevProcessedNum = 0;
+    while (true) {
+      const escape =
+          processedInfoArr.reduce((prev, curr) => prev && curr, true);
+      if (escape) break;
+
+
+      this.edges.forEach((edge, i) => {
+        if (processedInfoArr[i]) return;
+        const [p1, p2] = edge.getPoints();
+        let findP1 = pointsInEdges.find((p) => p === p1);
+        let findP2 = pointsInEdges.find((p) => p === p2);
+        if (!findP1) {
+          findP1 = p1;
+        }
+        if (!findP2) {
+          findP2 = p2;
+        }
+
+        processedInfoArr[i] = true;
+        if (pointsInEdges.length === 0) {
+          pointsInEdges.push(findP1);
+          pointsInEdges.push(findP2);
+          return;
+        }
+        if (findP1 === pointsInEdges[0] &&
+            findP2 !== pointsInEdges[pointsInEdges.length - 1]) {
+          pointsInEdges.unshift(findP2);
+        } else if (findP1 === pointsInEdges[pointsInEdges.length - 1] &&
+            findP2 !== pointsInEdges[0]) {
+          pointsInEdges.push(findP2);
+        } else if (findP2 === pointsInEdges[0] &&
+            findP1 !== pointsInEdges[pointsInEdges.length - 1]) {
+          pointsInEdges.unshift(findP1);
+        } else if (findP2 === pointsInEdges[pointsInEdges.length - 1] &&
+            findP1 !== pointsInEdges[0]) {
+          pointsInEdges.push(findP1);
+        } else {
+          processedInfoArr[i] = false;
+        }
+      });
+
+      const newProcessedLength = processedInfoArr.filter((info) => info).length;
+      if (newProcessedLength === prevProcessedNum) break;
+      prevProcessedNum = newProcessedLength;
+    }
+
     const vertices: number[][] = [];
     pointsInEdges.forEach((p) => {
       const vec = p.getCords();
@@ -433,12 +452,15 @@ export class Face {
 
 
     // if (vec3.dot(faceNormal, a) < 0) vec3.inverse(faceNormal, faceNormal);
-    const d = vec3.dot(a, faceNormal);
+
 
     // double sided normals
-    if (vec3.dot(localRayDirection, faceNormal) > 0) {
+    if (vec3.dot(localRayDirection, faceNormal) < 0) {
       vec3.negate(faceNormal, faceNormal);
     }
+
+    const d = vec3.dot(a, faceNormal);
+    vec3.negate(faceNormal, faceNormal);
 
     const denominator = vec3.dot(localRayDirection, faceNormal);
     if (!denominator) {
@@ -470,10 +492,15 @@ export class Face {
     // const dot3 = vec3.dot(tmp, faceNormal);
     const dot3 = this.testSide(hitPoint, c, a, b);
     if (dot1 && dot2 && dot3) {
-      console.log(raycaster.getRay(), distance);
-      console.log(dot1, dot2, dot3);
-      console.log(hitPoint, a, b, c);
-      return {face: this, distance: distance};
+      const worldHitPoint = vec3.create();
+      const objToWorldMat = mat4.create();
+      mat4.invert(objToWorldMat, transformMatrix);
+      vec3.transformMat4(worldHitPoint, hitPoint, objToWorldMat);
+
+      return {
+        face: this,
+        distance: vec3.distance(worldHitPoint, raycaster.getRay().getOrigin()),
+      };
     }
     return null;
   }

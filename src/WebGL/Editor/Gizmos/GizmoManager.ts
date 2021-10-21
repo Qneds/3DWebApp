@@ -200,6 +200,7 @@ export default class GizmoManager implements MouseListener {
     else this.activeSubGizmo = 'z';
 
     this.cameraController.block();
+    this.gizmoEvent.onStart();
     return true;
   }
 
@@ -266,10 +267,11 @@ export default class GizmoManager implements MouseListener {
       vec4.fromValues(1, 0, 0, 0);
     const im = mat4.create();
     mat4.invert(im, this.camera.getLookAtMatrix());
+    const w = cameraInScaleDirVec[3] ? cameraInScaleDirVec[3] : 1;
     vec4.transformMat4(cameraInScaleDirVec,
         cameraInScaleDirVec, im);
-    const cameraOutScaleDirVec = vec3.fromValues(cameraInScaleDirVec[0],
-        cameraInScaleDirVec[1], cameraInScaleDirVec[2]);
+    const cameraOutScaleDirVec = vec3.fromValues(cameraInScaleDirVec[0]/w,
+        cameraInScaleDirVec[1]/w, cameraInScaleDirVec[2]/w);
     vec3.normalize(cameraOutScaleDirVec, cameraOutScaleDirVec);
 
     const dot = vec3.dot(scaleDirVec, cameraOutScaleDirVec);
@@ -325,6 +327,7 @@ export default class GizmoManager implements MouseListener {
   onMouseUp(event: MouseEvent): void {
     this.activeSubGizmo = 'none';
     this.cameraController.unblock();
+    this.gizmoEvent.onFinish();
   }
   /**
    * @param {MouseEvent} event

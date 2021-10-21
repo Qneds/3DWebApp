@@ -9,7 +9,8 @@ import EditView, {EditViewMode} from 'WebGL/Views/EditView';
 import {tableRowStyle} from 'styles/jsStyles';
 import ColorModeContext from 'contexts/ColorModeContext';
 import EditModeContext from 'contexts/EditModeContext';
-import {ITool, MoveTool, RotateTool, ScaleTool} from 'WebGL/Editor/Tools/Tools';
+import {ITool, MoveTool, RotateTool, ScaleTool,
+  SurfaceSubdivisionTool} from 'WebGL/Editor/Tools/Tools';
 import TOOL_STORAGE from './ToolStorage';
 import {Refresher} from 'contexts/RefresherContext';
 
@@ -47,6 +48,10 @@ export function EditViewToolsSelector(props: IViewToolSelector): JSX.Element {
       }
       case ETools.scale: {
         tool = TOOL_STORAGE.getToolByType(ScaleTool);
+        break;
+      }
+      case ETools.surfaceSubdivision: {
+        tool = TOOL_STORAGE.getToolByType(SurfaceSubdivisionTool);
         break;
       }
     }

@@ -1,5 +1,6 @@
 import {mat4, vec3} from 'gl-matrix';
-import {calculateTransformationMatrix} from 'WebGL/utils.ts/Math';
+import {calculateTransformationMatrix,
+  normalizeAngle} from 'WebGL/utils.ts/Math';
 
 /**
  * Transform class
@@ -65,7 +66,7 @@ export class Transform {
    * @return {Transform}
    */
   public setPositionInParent(position: vec3): Transform {
-    this.positionInParent = position;
+    vec3.copy(this.positionInParent, position);
     this.updateTransformMatrix();
     return this;
   }
@@ -76,7 +77,10 @@ export class Transform {
    * @return {Transform}
    */
   public setOrientationInParent(orientation: vec3): Transform {
-    this.orientationInParent = orientation;
+    vec3.copy(this.orientationInParent, orientation);
+    /* for (let i = 0; i < 3; i++) {
+      this.orientationInParent[i] = normalizeAngle(this.orientationInParent[i]);
+    }*/
     this.updateTransformMatrix();
     return this;
   }
@@ -87,7 +91,7 @@ export class Transform {
    * @return {Transform}
    */
   public setScaleInParent(scale: vec3): Transform {
-    this.scaleInParent = scale;
+    vec3.copy(this.scaleInParent, scale);
     this.updateTransformMatrix();
     return this;
   }
