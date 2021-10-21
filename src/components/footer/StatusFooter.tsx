@@ -18,7 +18,7 @@ const StatusFooter = () => {
         backgroundColor={color?.colorMode.backgroundColor}
         borderColor={color?.colorMode.accentColor}
         borderWidth={2}>
-                footer
+                &nbsp;
       </Frame>
     </div>
   );
