@@ -253,7 +253,7 @@ export default class Object3D implements Renderable {
 
     let mat: ObjectMaterial | null = this.material;
     if (this.isSelected) mat = SPECIAL_MATERIALS.getSelectedObjectMaterial();
-    if (this.mesh && mat) {
+    if (this.mesh && this.mesh.isEnabled() && mat) {
       WebGLU.enablePolygonOffset(0.1, 1.0);
       const shaderF = mat.getFaceMaterial().getShader();
       this.setUpShader(shaderF, camera, transform);

@@ -274,8 +274,6 @@ export default class Mesh {
    * @param {BasicShader} shader
    */
   public drawPoints(shader: BasicShader): void {
-    if (!this.enabled) return;
-
     if (this.verticesBuffer) {
       shader.use();
       WebGLU.bindArrayBuffer(this.verticesBuffer);
@@ -289,8 +287,6 @@ export default class Mesh {
    * @param {BasicShader} shader
    */
   public drawEdges(shader: BasicShader): void {
-    if (!this.enabled) return;
-
     if (this.verticesBuffer && this.indicesBuffer) {
       shader.use();
       WebGLU.bindArrayBuffer(this.verticesBuffer);
@@ -306,8 +302,6 @@ export default class Mesh {
    * @param {BasicShader} shader
    */
   public drawFaces(shader: BasicShader): void {
-    if (!this.enabled) return;
-
     if (this.verticesBuffer && this.indicesBuffer) {
       shader.use();
       WebGLU.bindArrayBuffer(this.verticesBuffer);

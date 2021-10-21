@@ -15,6 +15,7 @@ import Mesh from 'WebGL/Objects/Mesh';
 import {Refresher} from 'contexts/RefresherContext';
 import ImportObjButton from './import/ImportObj';
 import ExportObjDropdown from './export/ExportObjDropdown';
+import MainInstruction from './instructions/MainInstruction';
 
 export interface ExportObjItemProps {
   toggleMenu: () => void;
@@ -78,6 +79,7 @@ const MainNavBar = (): JSX.Element => {
         >
           Add Object
         </DropdownItem>
+        <MainInstruction/>
       </GUIDropdown>
       <ImportObjButton/>
       <GUIDropdown
