@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/3DWebApp/static/css/main.464eb989.chunk.css",
+    "main.js": "/3DWebApp/static/js/main.bd79a8bd.chunk.js",
+    "main.js.map": "/3DWebApp/static/js/main.bd79a8bd.chunk.js.map",
+    "runtime-main.js": "/3DWebApp/static/js/runtime-main.50765988.js",
+    "runtime-main.js.map": "/3DWebApp/static/js/runtime-main.50765988.js.map",
+    "static/css/2.455652b6.chunk.css": "/3DWebApp/static/css/2.455652b6.chunk.css",
+    "static/js/2.fadc3505.chunk.js": "/3DWebApp/static/js/2.fadc3505.chunk.js",
+    "static/js/2.fadc3505.chunk.js.map": "/3DWebApp/static/js/2.fadc3505.chunk.js.map",
+    "index.html": "/3DWebApp/index.html",
+    "static/css/2.455652b6.chunk.css.map": "/3DWebApp/static/css/2.455652b6.chunk.css.map",
+    "static/css/main.464eb989.chunk.css.map": "/3DWebApp/static/css/main.464eb989.chunk.css.map",
+    "static/js/2.fadc3505.chunk.js.LICENSE.txt": "/3DWebApp/static/js/2.fadc3505.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.50765988.js",
+    "static/css/2.455652b6.chunk.css",
+    "static/js/2.fadc3505.chunk.js",
+    "static/css/main.464eb989.chunk.css",
+    "static/js/main.bd79a8bd.chunk.js"
+  ]
+}
