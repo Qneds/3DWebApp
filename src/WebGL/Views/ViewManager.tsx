@@ -78,7 +78,11 @@ export class ViewManager {
   public enableEditView(): void {
     const so = STATE.getSelectedObject();
     if (so && this.canvasEvent) {
-      this.setActualView(new EditView(so, this.canvasEvent));
+      if (so.getMesh()) {
+        this.setActualView(new EditView(so, this.canvasEvent));
+      } else {
+        throw new Error('Selected object has no mesh');
+      }
     } else {
       throw new Error('None object is selected');
     }

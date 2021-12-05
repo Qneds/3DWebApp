@@ -25,7 +25,6 @@ export const basicVertexShader = `
     gl_Position = getWorldPosition();
     gl_PointSize = 5.0;
   }
-
 `;
 
 export const basicFragmentShader = `

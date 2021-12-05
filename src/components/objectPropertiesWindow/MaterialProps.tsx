@@ -6,6 +6,7 @@ import STATE from 'WebGL/State';
 import {SketchPicker} from 'react-color';
 import ModalSystemContext from 'contexts/ModalSystemContext';
 import colorConverter from 'color-convert';
+import {RefreshMechanism} from 'contexts/RefresherContext';
 
 interface ColorInt {
   hex: string;
@@ -66,6 +67,7 @@ const getColorFromSelectedObj = (): ColorInt => {
 };
 
 const MaterialProps = (): JSX.Element=> {
+  const refreshResponse = useContext(RefreshMechanism);
   const colorModeCtx = useContext(ColorModeContext);
   const modalSystem = useContext(ModalSystemContext);
   const [chosenColor, setChosenColor] = useState(getColorFromSelectedObj());
@@ -83,6 +85,10 @@ const MaterialProps = (): JSX.Element=> {
       setIsColorPickerDisplayed(modalSystem ? modalSystem.isOpen : false);
     }
   }, [modalSystem?.isOpen]);
+
+  useEffect(() => {
+    setChosenColor(getColorFromSelectedObj());
+  }, [, refreshResponse]);
 
   const setupPickerModal = () => {
     modalSystem?.setModalData({

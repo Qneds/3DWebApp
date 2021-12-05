@@ -1,5 +1,6 @@
 {
   "name": "3d-web-edit",
+  "homepage": "https://Qneds.github.io/3DWebApp/",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index",
@@ -72,6 +73,7 @@
     "eslint": "^7.32.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-react": "^7.24.0",
+    "gh-pages": "^3.2.3",
     "react": "^17.0.2",
     "typescript": "^4.3.5",
     "worker-loader": "^3.0.8",
