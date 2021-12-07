@@ -495,7 +495,7 @@ export class Face {
       const worldHitPoint = vec3.create();
       const objToWorldMat = mat4.create();
       mat4.invert(objToWorldMat, transformMatrix);
-      vec3.transformMat4(worldHitPoint, hitPoint, objToWorldMat);
+      vec3.transformMat4(worldHitPoint, hitPoint, transformMatrix);
 
       return {
         face: this,

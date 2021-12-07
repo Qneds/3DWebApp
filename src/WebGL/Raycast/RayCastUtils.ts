@@ -74,7 +74,8 @@ export function getClosestObj(arr: ObjectRaycastHit[] | null):
     } else {
       const closestFace = getClosestFaceOfObj(h.hits);
       if (closestFace && closestObjF &&
-          closestFace.distance > closestObjF.distance) {
+          closestFace.distance < closestObjF.distance) {
+        console.log(closestObjF, closestFace);
         closestObj = h;
         closestObjF = closestFace;
       }
