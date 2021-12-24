@@ -1,6 +1,6 @@
 {
   "name": "3d-web-edit",
-  "homepage": "https://Qneds.github.io/3DWebApp/",
+  "homepage": "https://qneds.github.io/3DWebApp",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index",
@@ -45,7 +45,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
