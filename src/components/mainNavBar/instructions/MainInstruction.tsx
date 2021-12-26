@@ -138,14 +138,22 @@ const InstructionBody = (): JSX.Element => {
       </p>
 
       <h3>Exporting object</h3>
-      To export an object to a file, open the <q>Export</q>
-      drop-down menu and select file extension.
-      In the menu that opens, there is an option
-      to change the behavior of the export mechanism.
-      You can either export one object or export an entire
-      subtree of objects into.
-      The selected object will be exported or root element
-      if no object is selected.
+      <p>
+        To export an object to a file, open the <q>Export</q>
+        drop-down menu and select file extension.
+        In the menu that opens, there is an option
+        to change the behavior of the export mechanism.
+        You can either export one object or export an entire
+        subtree of objects into.
+        The selected object will be exported or root element
+        if no object is selected.
+      </p>
+
+      <h3>Window</h3>
+      <p>
+        You can adjust size of each window by holding left mouse button,
+        while mouse pointer is on the edge of window, and moving mouse.
+      </p>
 
     </Form>
   );
